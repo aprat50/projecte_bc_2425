@@ -6,9 +6,9 @@
 
 // Init:                                 1
 // Upgrade:                              1
-// Endpoints:                            0
+// Endpoints:                            9
 // Async Callback (empty):               1
-// Total number of exported functions:   3
+// Total number of exported functions:  12
 
 #![no_std]
 
@@ -20,6 +20,15 @@ multiversx_sc_wasm_adapter::endpoints! {
     (
         init => init
         upgrade => upgrade
+        fund => fund
+        claim => claim
+        status => status
+        getCurrentFunds => get_current_funds
+        set_max_funds => set_max_funds
+        getTarget => target
+        getDeadline => deadline
+        getDeposit => deposit
+        getMaxfund => maxfund
     )
 }
 
