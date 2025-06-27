@@ -51,13 +51,15 @@ pub trait CrowdfundingSc {
 
         let caller = self.blockchain().get_caller();
         let deposited_amount = self.deposit(&caller).get();
-        let caller_amount = deposited_amount + payment;
+        let caller_amount = deposited_amount + payment.clone();
         require!(
-                self.validate_donation(caller_amount),
-                "deposited fund must lower or equal to límit fund"
+            self.validate_donation(payment.clone(),  caller_amount.clone()),
+            "deposited fund not match limits"
             );
-        }
-
+        require!(
+            self.validate_max_donations(payment.clone()),
+            "total donations exceed maximum target"
+        );
         self.deposit(&caller).set(caller_amount);
     }
 
@@ -94,7 +96,7 @@ pub trait CrowdfundingSc {
     #[endpoint(SetMaxTarget)]
     fn set_max_target(&self, maxtarget: BigUint)
     {
-        require!(maxtarget > 0u32 "Maximum target must be more than 0");
+        require!(maxtarget > 0u32, "Maximum target must be more than 0");
         self.maxtarget().set(maxtarget);
     }
 
@@ -144,16 +146,15 @@ pub trait CrowdfundingSc {
 
     fn validate_donation(&self, payment: BigUint, deposited_amount: BigUint) -> bool 
     {
-        // Validar donació:
+        // Validar donatiu:
         // 1. payment inferior a limitfund si s'ha establert
         // 2. Acumulat donant inferior a la donació màxima per donant si s'ha establert
-        // 3. Total acumulat de donacions inferior a la quantitat màxima objectiu si s'ha establert
         // Paràmetres i variables:
         // 1. payment és la donació que fa el donant
         // 2. deposited_amount és la quantitat recuperada del caller que en aquest cas 
         //    és el wallet del donant
 
-        let valid = true;
+        let mut valid = true;
         
         if (self.limitfund().get() > 0u32) && (payment > self.limitfund().get())
          {
@@ -167,9 +168,19 @@ pub trait CrowdfundingSc {
          {
             valid = false;
          }
-        valid;
+        valid
     }
       
+    fn validate_max_donations(&self, payment: BigUint) -> bool 
+    {
+        // Validar límit màxim donatius
+        // 1. Total acumulat de donacions inferior a la quantitat màxima objectiu si s'ha establert
+        // Paràmetres i variables:
+        // 1. payment és la donació que fa el donant
+        
+        self.get_current_funds() + payment > self.maxtarget().get()
+        
+    }
     
     // storage
     // target = objectiu del crowdfunding

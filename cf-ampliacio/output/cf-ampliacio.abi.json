@@ -54,6 +54,42 @@
             "outputs": []
         },
         {
+            "name": "SetMaxTarget",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "maxtarget",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "SetMaxFunds",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "maxfund",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "SetLimitFunds",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "limitfund",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": []
+        },
+        {
             "name": "status",
             "mutability": "readonly",
             "inputs": [],
@@ -74,19 +110,17 @@
             ]
         },
         {
-            "name": "set_max_funds",
-            "onlyOwner": true,
-            "mutability": "mutable",
-            "inputs": [
+            "name": "getTarget",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
                 {
-                    "name": "maxfund",
                     "type": "BigUint"
                 }
-            ],
-            "outputs": []
+            ]
         },
         {
-            "name": "getTarget",
+            "name": "getMaxTarget",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -122,6 +156,16 @@
         },
         {
             "name": "getMaxfund",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getLimitFund",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
