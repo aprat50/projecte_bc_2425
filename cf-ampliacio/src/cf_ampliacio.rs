@@ -147,23 +147,23 @@ pub trait CrowdfundingSc {
         // Validar donació:
         // 1. payment inferior a limitfund si s'ha establert
         // 2. Acumulat donant inferior a la donació màxima per donant si s'ha establert
+        // 3. Total acumulat de donacions inferior a la quantitat màxima objectiu si s'ha establert
         // Paràmetres i variables:
         // 1. payment és la donació que fa el donant
         // 2. deposited_amount és la quantitat recuperada del caller que en aquest cas 
         //    és el wallet del donant
-        // 3. mf és la donació màxima per donant si s'ha establert
-        // 4. lf és el límit per donació si s'ha establert
-        
+
         let valid = true;
         
-        let mf = self.maxfund().get();
-        let lf = self.limitfund().get();
-        
-        if (lf > 0u32) && (payment > lf)
+        if (self.limitfund().get() > 0u32) && (payment > self.limitfund().get())
          {
             valid = false;
          }
-        if valid && (mf > 0u32) && (deposited_amount > mf)
+        if valid && (self.maxfund().get() > 0u32) && (deposited_amount > self.maxfund().get())
+         {
+            valid = false;
+         }
+        if valid && (self.get_current_funds() + payment > self.maxtarget().get())
          {
             valid = false;
          }
