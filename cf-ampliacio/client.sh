@@ -1,10 +1,11 @@
 #!/bin/bash
 
-CONTRACT="erd1qqqqqqqqqqqqqpgqzqlkv9x70h7c2stp42r52xpdf3sf3esr9mwq53j3gf" # Cambia por la dirección real del SC
-PEM="./wallet.pem"      # Cambia por la ruta a tu wallet
+CONTRACT="erd1qqqqqqqqqqqqqpgqngg6uwmgzxwalkfjsu5y6etxlkpvs487tnfqqa9vs6" # Cambia por la dirección real del SC
+PEM="./mywallet.pem"      # Cambia por la ruta a tu wallet
+//PEM="./wallet.pem"
 PROXY="https://devnet-api.multiversx.com"
 
-# Función para convertir hex a decimal (maneja números grandes)
+# Función para convertir hex a decimal (maneja números grandes)erd1qqqqqqqqqqqqqpgq7kckggc68jdq7nwnvymndumqm0vngzfttnfqg5cspw
 hex_to_decimal() {
   local hex_value=$1
   if [[ $hex_value == "0x"* ]]; then
@@ -144,6 +145,72 @@ get_target() {
   fi
 }
 
+get_maxtarget() {
+  echo "Consultando meta máxima del crowdfunding..."
+  result=$(mxpy contract query $CONTRACT \
+    --function getMaxTarget \
+    --proxy $PROXY 2>/dev/null)
+  
+  if [[ $? -eq 0 ]]; then
+    # Extraer el valor hexadecimal de la respuesta (formato: ["hex_value"])
+    hex_target=$(echo "$result" | grep -o '"[^"]*"' | head -1 | tr -d '"')
+    if [[ -n "$hex_target" && "$hex_target" != "" ]]; then
+      decimal_target=$(hex_to_decimal "$hex_target")
+      egld_target=$(denomination_to_egld "$decimal_target")
+      echo "Meta máxima: $egld_target ($decimal_target)"
+    else
+      echo "No se pudo parsear la meta máxima"
+      echo "Respuesta raw: $result"
+    fi
+  else
+    echo "Error al consultar la meta máxima"
+  fi
+}
+
+get_maxfund() {
+  echo "Consultando límite doncaciones por donante del crowdfunding..."
+  result=$(mxpy contract query $CONTRACT \
+    --function getMaxFund \
+    --proxy $PROXY 2>/dev/null)
+  
+  if [[ $? -eq 0 ]]; then
+    # Extraer el valor hexadecimal de la respuesta (formato: ["hex_value"])
+    hex_target=$(echo "$result" | grep -o '"[^"]*"' | head -1 | tr -d '"')
+    if [[ -n "$hex_target" && "$hex_target" != "" ]]; then
+      decimal_target=$(hex_to_decimal "$hex_target")
+      egld_target=$(denomination_to_egld "$decimal_target")
+      echo "Límite donaciones por donante : $egld_target ($decimal_target)"
+    else
+      echo "No se pudo parsear el límite doncaciones por donante"
+      echo "Respuesta raw: $result"
+    fi
+  else
+    echo "Error al consultar el límite doncaciones por donante"
+  fi
+}
+
+get_limitfund() {
+  echo "Consultando límite donación del crowdfunding..."
+  result=$(mxpy contract query $CONTRACT \
+    --function getLimitFund \
+    --proxy $PROXY 2>/dev/null)
+  
+  if [[ $? -eq 0 ]]; then
+    # Extraer el valor hexadecimal de la respuesta (formato: ["hex_value"])
+    hex_target=$(echo "$result" | grep -o '"[^"]*"' | head -1 | tr -d '"')
+    if [[ -n "$hex_target" && "$hex_target" != "" ]]; then
+      decimal_target=$(hex_to_decimal "$hex_target")
+      egld_target=$(denomination_to_egld "$decimal_target")
+      echo "Límite máximo por donación: $egld_target ($decimal_target)"
+    else
+      echo "No se pudo parsear el límite donación"
+      echo "Respuesta raw: $result"
+    fi
+  else
+    echo "Error al consultar el límite donación"
+  fi
+}
+
 get_deadline() {
   echo "Consultando fecha límite..."
   result=$(mxpy contract query $CONTRACT \
@@ -191,13 +258,13 @@ get_deposit() {
 }
 
 set_maxfunds() {
-  read -p "Entrar valor límite máximo donación: " MAX_DONATION
+  read -p "Entrar valor límite máximo donaciones por donante: " MAX_DONATION
   if [[ $MAX_DONATION -gt 0 ]]; then
      mxpy contract call $CONTRACT \
     --pem $PEM \
     --recall-nonce \
     --gas-limit=5000000 \
-    --function set_max_funds \
+    --function SetMaxFunds \
     --arguments $MAX_DONATION \
     --proxy $PROXY \
     --chain D \
@@ -205,7 +272,36 @@ set_maxfunds() {
   fi 
   }
 
-  
+set_limitfunds() {
+  read -p "Entrar valor límite máximo donación: " MAX_DONATION
+  if [[ $MAX_DONATION -gt 0 ]]; then
+     mxpy contract call $CONTRACT \
+    --pem $PEM \
+    --recall-nonce \
+    --gas-limit=5000000 \
+    --function SetLimitFunds \
+    --arguments $MAX_DONATION \
+    --proxy $PROXY \
+    --chain D \
+    --send
+  fi 
+  }
+
+set_maxtarget() {
+  read -p "Entrar valor máximo meta del crowdfunding: " MAX_TARGET
+  if [[ $MAX_TARGET -gt 0 ]]; then
+     mxpy contract call $CONTRACT \
+    --pem $PEM \
+    --recall-nonce \
+    --gas-limit=5000000 \
+    --function SetMaxTarget \
+    --arguments $MAX_TARGET \
+    --proxy $PROXY \
+    --chain D \
+    --send
+  fi 
+  }
+
 while true; do
   echo "Contracte: $CONTRACT"
   echo ""
@@ -217,7 +313,12 @@ while true; do
   echo "5) Ver meta (getTarget)"
   echo "6) Ver fecha límite (getDeadline)"
   echo "7) Consultar donación de una address (getDeposit)"
-  echo "8) Establecer donación máxima (set_max_funds)"
+  echo "8) Establecer donación máxima por donante (set_max_funds)"
+  echo "9) Establecer donación máxima por donación (set_limit_funds)"
+  echo "10) Establecer meta máxima (set_max_target)"
+  echo "11) Consultar donación máxima por donante (getMaxFund)"
+  echo "12) Consultar donación máxima por donación (getLimitFund)"
+  echo "13) Consultar meta máxima (getMaxTarget)"
   echo "0) Salir"
   echo "================================"
   read -p "Elige una opción: " opcion
@@ -231,6 +332,11 @@ while true; do
     6) get_deadline ;;
     7) get_deposit ;;
     8) set_maxfunds ;;
+    9) set_limitfunds ;;
+    10) set_maxtarget ;;
+    11) get_maxfund ;;
+    12) get_limitfund ;;
+    13) get_maxtarget ;;
     0) echo "¡Hasta luego!"; break ;;
     *) echo "Opción no válida." ;;
   esac
