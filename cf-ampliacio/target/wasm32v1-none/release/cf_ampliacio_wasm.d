@@ -1,0 +1,1 @@
+/home/pwd_is_123/codigo/projecte_bc_2425/cf-ampliacio/target/wasm32v1-none/release/cf_ampliacio_wasm.wasm: /home/pwd_is_123/codigo/projecte_bc_2425/cf-ampliacio/src/cf_ampliacio.rs /home/pwd_is_123/codigo/projecte_bc_2425/cf-ampliacio/wasm/src/lib.rs

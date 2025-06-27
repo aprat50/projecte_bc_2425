@@ -1,0 +1,1 @@
+/home/pwd_is_123/codigo/projecte_bc_2425/cf-ampliacio/target/debug/cf-ampliacio-meta: /home/pwd_is_123/codigo/projecte_bc_2425/cf-ampliacio/meta/src/main.rs /home/pwd_is_123/codigo/projecte_bc_2425/cf-ampliacio/src/cf_ampliacio.rs
