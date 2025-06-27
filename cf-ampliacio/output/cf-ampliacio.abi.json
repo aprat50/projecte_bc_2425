@@ -155,7 +155,7 @@
             ]
         },
         {
-            "name": "getMaxfund",
+            "name": "getMaxFund",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [

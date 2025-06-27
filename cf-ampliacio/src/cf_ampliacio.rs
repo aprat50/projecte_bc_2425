@@ -178,7 +178,7 @@ pub trait CrowdfundingSc {
         // Paràmetres i variables:
         // 1. payment és la donació que fa el donant
         
-        self.get_current_funds() + payment > self.maxtarget().get()
+        self.get_current_funds() + payment < self.maxtarget().get()
         
     }
     
@@ -204,7 +204,7 @@ pub trait CrowdfundingSc {
     fn deposit(&self, donor: &ManagedAddress) -> SingleValueMapper<BigUint>;
 
     // maxfund = límit màxim de donatius d'un mateix donant
-    #[view(getMaxfund)]
+    #[view(getMaxFund)]
     #[storage_mapper("maxfund")]
     fn maxfund(&self) -> SingleValueMapper<BigUint>;
 

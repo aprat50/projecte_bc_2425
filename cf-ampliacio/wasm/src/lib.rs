@@ -31,7 +31,7 @@ multiversx_sc_wasm_adapter::endpoints! {
         getMaxTarget => maxtarget
         getDeadline => deadline
         getDeposit => deposit
-        getMaxfund => maxfund
+        getMaxFund => maxfund
         getLimitFund => limitfund
     )
 }
