@@ -36,6 +36,8 @@ pub trait CrowdfundingSc {
     #[upgrade]
     fn upgrade(&self) {}
 
+    // Endpoints
+
     #[endpoint]
     #[payable("EGLD")]
     fn fund(&self) {
@@ -50,15 +52,8 @@ pub trait CrowdfundingSc {
         let caller = self.blockchain().get_caller();
         let deposited_amount = self.deposit(&caller).get();
         let caller_amount = deposited_amount + payment;
-        // aprat Validar donació payment inferior a maxfunds si s'ha establert
-        let mf = self.maxfund().get();
-        if mf > 0
-        {
-            // Acumulat donant superior al límit
-            // deposited_amount és la quantitat recuperada del caller que en aquest cas 
-            // és el wallet del donant
-            require!(
-                caller_amount <= mf,
+        require!(
+                self.validate_donation(caller_amount),
                 "deposited fund must lower or equal to límit fund"
             );
         }
@@ -92,6 +87,37 @@ pub trait CrowdfundingSc {
         }
     }
 
+        
+
+    // Establir quantitat màxima objectiu (només propietari)
+    #[only_owner]
+    #[endpoint(SetMaxTarget)]
+    fn set_max_target(&self, maxtarget: BigUint)
+    {
+        require!(maxtarget > 0, "Maximum target must be more than 0");
+        self.maxtarget().set(maxtarget);
+    }
+
+    // Establir límit màxim donatius per donant (només propietari)
+    #[only_owner]
+    #[endpoint(SetMaxFunds)]
+    fn set_max_funds(&self, maxfund: BigUint)
+    {
+        require!(maxfund > 0, "Maximum fund must be more than 0");
+        self.maxfund().set(maxfund);
+    }
+    
+    // Establir límit màxim donatiu per donació (només propietari)
+    #[only_owner]
+    #[endpoint(SetLimitFunds)]
+    fn set_limit_funds(&self, limitfund: BigUint)
+    {
+        require!(limitfund > 0, "Limit fund must be more than 0");
+        self.limitfund().set(limitfund);
+    }
+    
+    // Views
+    
     #[view]
     fn status(&self) -> Status {
         if self.get_current_time() <= self.deadline().get() {
@@ -109,14 +135,6 @@ pub trait CrowdfundingSc {
             .get_sc_balance(&EgldOrEsdtTokenIdentifier::egld(), 0)
     }
 
-    // aprat Establir límit màxim donatiu (només propietari)
-    #[only_owner]
-    #[endpoint]
-    fn set_max_funds(&self, maxfund: BigUint)
-    {
-        require!(maxfund > 0, "Maximum fund must be more than 0");
-        self.maxfund().set(maxfund);
-    }
 
     // private
 
@@ -124,22 +142,48 @@ pub trait CrowdfundingSc {
         self.blockchain().get_block_timestamp()
     }
 
+    fn validate_donation(&self, deposited_amount: BigUint) -> bool 
+    {
+        // aprat Validar donació payment inferior a maxfunds si s'ha establert
+        // Acumulat donant superior al límit
+        // deposited_amount és la quantitat recuperada del caller que en aquest cas 
+        // és el wallet del donant
+        
+        let mf = self.maxfund().get();
+        mf > 0 && deposited_amount <= mf
+      
+    }
+      
+    
     // storage
-
+    // target = objectiu del crowdfunding
     #[view(getTarget)]
     #[storage_mapper("target")]
     fn target(&self) -> SingleValueMapper<BigUint>;
 
+    // maxtarget = objectiu màxim del crowdfunding
+    #[view(getMaxTarget)]
+    #[storage_mapper("maxtarget")]
+    fn maxtarget(&self) -> SingleValueMapper<BigUint>;
+
+    // deadline = data de finalització del crowdfunding
     #[view(getDeadline)]
     #[storage_mapper("deadline")]
     fn deadline(&self) -> SingleValueMapper<u64>;
 
+    // deposit = depòsit acumulat de donacions
     #[view(getDeposit)]
     #[storage_mapper("deposit")]
     fn deposit(&self, donor: &ManagedAddress) -> SingleValueMapper<BigUint>;
 
+    // maxfund = límit màxim de donatius d'un mateix donant
     #[view(getMaxfund)]
     #[storage_mapper("maxfund")]
     fn maxfund(&self) -> SingleValueMapper<BigUint>;
+
+    // limitfund = límit per donació
+    #[view(getLimitFund)]
+    #[storage_mapper("limitfund")]
+    fn limitfund(&self) -> SingleValueMapper<BigUint>;
     
 }
