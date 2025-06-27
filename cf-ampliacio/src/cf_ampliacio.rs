@@ -94,7 +94,7 @@ pub trait CrowdfundingSc {
     #[endpoint(SetMaxTarget)]
     fn set_max_target(&self, maxtarget: BigUint)
     {
-        require!(maxtarget > 0, "Maximum target must be more than 0");
+        require!(maxtarget > 0u32 "Maximum target must be more than 0");
         self.maxtarget().set(maxtarget);
     }
 
@@ -103,7 +103,7 @@ pub trait CrowdfundingSc {
     #[endpoint(SetMaxFunds)]
     fn set_max_funds(&self, maxfund: BigUint)
     {
-        require!(maxfund > 0, "Maximum fund must be more than 0");
+        require!(maxfund > 0u32, "Maximum fund must be more than 0");
         self.maxfund().set(maxfund);
     }
     
@@ -112,7 +112,7 @@ pub trait CrowdfundingSc {
     #[endpoint(SetLimitFunds)]
     fn set_limit_funds(&self, limitfund: BigUint)
     {
-        require!(limitfund > 0, "Limit fund must be more than 0");
+        require!(limitfund > 0u32, "Limit fund must be more than 0");
         self.limitfund().set(limitfund);
     }
     
@@ -142,16 +142,32 @@ pub trait CrowdfundingSc {
         self.blockchain().get_block_timestamp()
     }
 
-    fn validate_donation(&self, deposited_amount: BigUint) -> bool 
+    fn validate_donation(&self, payment: BigUint, deposited_amount: BigUint) -> bool 
     {
-        // aprat Validar donació payment inferior a maxfunds si s'ha establert
-        // Acumulat donant superior al límit
-        // deposited_amount és la quantitat recuperada del caller que en aquest cas 
-        // és el wallet del donant
+        // Validar donació:
+        // 1. payment inferior a limitfund si s'ha establert
+        // 2. Acumulat donant inferior a la donació màxima per donant si s'ha establert
+        // Paràmetres i variables:
+        // 1. payment és la donació que fa el donant
+        // 2. deposited_amount és la quantitat recuperada del caller que en aquest cas 
+        //    és el wallet del donant
+        // 3. mf és la donació màxima per donant si s'ha establert
+        // 4. lf és el límit per donació si s'ha establert
+        
+        let valid = true;
         
         let mf = self.maxfund().get();
-        mf > 0 && deposited_amount <= mf
-      
+        let lf = self.limitfund().get();
+        
+        if (lf > 0u32) && (payment > lf)
+         {
+            valid = false;
+         }
+        if valid && (mf > 0u32) && (deposited_amount > mf)
+         {
+            valid = false;
+         }
+        valid;
     }
       
     
