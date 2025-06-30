@@ -1,0 +1,1 @@
+/home/pwd_is_123/codigo/projecte_bc_2425/asset_loan/asset-loan/target/debug/asset-loan-meta: /home/pwd_is_123/codigo/projecte_bc_2425/asset_loan/asset-loan/meta/src/main.rs /home/pwd_is_123/codigo/projecte_bc_2425/asset_loan/asset-loan/src/asset_loan.rs

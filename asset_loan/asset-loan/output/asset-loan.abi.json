@@ -1,0 +1,35 @@
+{
+    "buildInfo": {
+        "rustc": {
+            "version": "1.87.0",
+            "commitHash": "17067e9ac6d7ecb70e50f92c1944e545188d2359",
+            "commitDate": "2025-05-09",
+            "channel": "Stable",
+            "short": "rustc 1.87.0 (17067e9ac 2025-05-09)"
+        },
+        "contractCrate": {
+            "name": "asset-loan",
+            "version": "0.0.0"
+        },
+        "framework": {
+            "name": "multiversx-sc",
+            "version": "0.58.0"
+        }
+    },
+    "docs": [
+        "An empty contract. To be used as a template when starting a new contract from scratch."
+    ],
+    "name": "AssetLoan",
+    "constructor": {
+        "inputs": [],
+        "outputs": []
+    },
+    "upgradeConstructor": {
+        "inputs": [],
+        "outputs": []
+    },
+    "endpoints": [],
+    "esdtAttributes": [],
+    "hasCallback": false,
+    "types": {}
+}

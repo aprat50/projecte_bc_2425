@@ -1,0 +1,24 @@
+[package]
+name = "asset-loan"
+version = "0.0.0"
+edition = "2021"
+publish = false
+authors = ["Àngel Prat"]
+
+[lib]
+path = "src/asset_loan.rs"
+
+[dependencies.multiversx-sc]
+version = "0.58.0"
+
+[dev-dependencies]
+num-bigint = "0.4"
+
+[dev-dependencies.multiversx-sc-scenario]
+version = "0.58.0"
+
+[workspace]
+members = [
+    ".",
+    "meta",
+]

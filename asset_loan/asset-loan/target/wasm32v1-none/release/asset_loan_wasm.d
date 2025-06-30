@@ -1,0 +1,1 @@
+/home/pwd_is_123/codigo/projecte_bc_2425/asset_loan/asset-loan/target/wasm32v1-none/release/asset_loan_wasm.wasm: /home/pwd_is_123/codigo/projecte_bc_2425/asset_loan/asset-loan/src/asset_loan.rs /home/pwd_is_123/codigo/projecte_bc_2425/asset_loan/asset-loan/wasm/src/lib.rs
