@@ -8,6 +8,7 @@ multiversx_sc::derive_imports!();
 pub enum Status {
     Available,
     Cancel,
+    Loan,
     Repair,
 }
 
@@ -19,6 +20,8 @@ pub struct Asset<M: ManagedTypeApi> {
     location: ManagedBuffer<M>,
     status: Status,
     owner: ManagedAddress<M>,
+    borrower: Option<ManagedAddress<M>>,
+    loan_end_timestamp: Option<u64>,
 }
 
 #[multiversx_sc::contract]
@@ -65,6 +68,7 @@ pub trait AssetLoan {
         self.whitelisted_addresses().contains(address)
     }
 
+    #[only_owner]
     #[endpoint(registerAsset)]
     fn register_asset(
         &self,
@@ -73,10 +77,6 @@ pub trait AssetLoan {
         location: ManagedBuffer,
     ) {
         let caller = self.blockchain().get_caller();
-        require!(
-            self.is_whitelisted(&caller),
-            "Only whitelisted addresses can register assets"
-        );
         require!(self.asset(&code).is_empty(), "Asset already registered");
 
         let asset = Asset {
@@ -85,6 +85,8 @@ pub trait AssetLoan {
             location,
             status: Status::Available,
             owner: caller.clone(),
+            borrower: None,
+            loan_end_timestamp: None,
         };
 
         // Store the asset
@@ -107,8 +109,47 @@ pub trait AssetLoan {
         self.asset(&code).set(asset);
     }
 
-    // Views
+    // Loan endpoints
+    #[endpoint(registerLoan)]
+    fn register_loan(
+        &self,
+        asset_code: ManagedBuffer,
+        borrower: ManagedAddress,
+        duration: u64,
+    ) {
+        let mut asset = self.asset(&asset_code).get().unwrap_or_else(|| sc_panic!("Asset not found"));
+        require!(asset.status == Status::Available, "Asset is not available for loan");
+        
+        let current_timestamp = self.blockchain().get_block_timestamp();
+        
+        // Update asset
+        asset.status = Status::Loan;
+        asset.borrower = Some(borrower);
+        asset.loan_end_timestamp = Some(current_timestamp + duration);
+        
+        self.asset(&asset_code).set(asset);
+    }
 
+    #[endpoint(returnAsset)]
+    fn return_asset(&self, asset_code: ManagedBuffer) {
+        let caller = self.blockchain().get_caller();
+        let mut asset = self.asset(&asset_code).get().unwrap_or_else(|| sc_panic!("Asset not found"));
+        
+        require!(
+            asset.borrower.clone().unwrap_or_else(|| sc_panic!("No borrower")) == caller,
+            "Only the borrower can return the asset"
+        );
+        require!(asset.status == Status::Loan, "Asset is not on loan");
+        
+        // Update asset status
+        asset.status = Status::Available;
+        asset.borrower = None;
+        asset.loan_end_timestamp = None;
+        
+        self.asset(&asset_code).set(asset);
+    }
+
+    // Views
     #[view(getMyAssets)]
     fn get_my_assets(&self) -> MultiValueEncoded<Asset<Self::Api>> {
         let caller = self.blockchain().get_caller();
@@ -127,8 +168,7 @@ pub trait AssetLoan {
         
         result
     }
-
-   
+    
     // Storage  
     #[view(getAsset)]
     #[storage_mapper("asset")]
