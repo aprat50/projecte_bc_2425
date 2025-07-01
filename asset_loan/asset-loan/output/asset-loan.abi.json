@@ -16,20 +16,232 @@
             "version": "0.58.0"
         }
     },
-    "docs": [
-        "An empty contract. To be used as a template when starting a new contract from scratch."
-    ],
     "name": "AssetLoan",
     "constructor": {
-        "inputs": [],
+        "inputs": [
+            {
+                "name": "initial_whitelist",
+                "type": "variadic<Address>",
+                "multi_arg": true
+            }
+        ],
         "outputs": []
     },
     "upgradeConstructor": {
-        "inputs": [],
+        "inputs": [
+            {
+                "name": "new_whitelist",
+                "type": "variadic<Address>",
+                "multi_arg": true
+            }
+        ],
         "outputs": []
     },
-    "endpoints": [],
+    "endpoints": [
+        {
+            "name": "addToWhitelist",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeFromWhitelist",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "isWhitelisted",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "registerAsset",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "code",
+                    "type": "bytes"
+                },
+                {
+                    "name": "name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "location",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "changeAssetStatus",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "code",
+                    "type": "bytes"
+                },
+                {
+                    "name": "new_status",
+                    "type": "Status"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "registerLoan",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "asset_code",
+                    "type": "bytes"
+                },
+                {
+                    "name": "borrower",
+                    "type": "Address"
+                },
+                {
+                    "name": "duration",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "returnAsset",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "asset_code",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getMyAssets",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<Asset>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getAsset",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "code",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "Asset"
+                }
+            ]
+        },
+        {
+            "name": "getOwnerAssets",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "owner",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "variadic<bytes>",
+                    "multi_result": true
+                }
+            ]
+        }
+    ],
     "esdtAttributes": [],
     "hasCallback": false,
-    "types": {}
+    "types": {
+        "Asset": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "code",
+                    "type": "bytes"
+                },
+                {
+                    "name": "name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "location",
+                    "type": "bytes"
+                },
+                {
+                    "name": "status",
+                    "type": "Status"
+                },
+                {
+                    "name": "owner",
+                    "type": "Address"
+                },
+                {
+                    "name": "borrower",
+                    "type": "Option<Address>"
+                },
+                {
+                    "name": "loan_end_timestamp",
+                    "type": "Option<u64>"
+                }
+            ]
+        },
+        "Status": {
+            "type": "enum",
+            "variants": [
+                {
+                    "name": "Available",
+                    "discriminant": 0
+                },
+                {
+                    "name": "Cancel",
+                    "discriminant": 1
+                },
+                {
+                    "name": "Loan",
+                    "discriminant": 2
+                },
+                {
+                    "name": "Repair",
+                    "discriminant": 3
+                }
+            ]
+        }
+    }
 }

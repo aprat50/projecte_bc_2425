@@ -3,8 +3,10 @@
 multiversx_sc::imports!();
 multiversx_sc::derive_imports!();
 
+
 // Status of the asset
-#[derive(TypeAbi, TopEncode, TopDecode, NestedEncode, NestedDecode)]
+#[type_abi]
+#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, PartialEq)]
 pub enum Status {
     Available,
     Cancel,
@@ -13,7 +15,8 @@ pub enum Status {
 }
 
 // Asset struct
-#[derive(TypeAbi, TopEncode, TopDecode, NestedEncode, NestedDecode)]
+#[type_abi]
+#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode)]
 pub struct Asset<M: ManagedTypeApi> {
     code: ManagedBuffer<M>,
     name: ManagedBuffer<M>,
@@ -30,7 +33,7 @@ pub trait AssetLoan {
     #[init]
     fn init(&self, initial_whitelist: MultiValueEncoded<ManagedAddress>) {
         // Initialize whitelist with provided addresses
-        let whitelist = self.whitelisted_addresses();
+        let mut whitelist = self.whitelisted_addresses();
         for address in initial_whitelist {
             whitelist.insert(address);
         }
@@ -42,7 +45,7 @@ pub trait AssetLoan {
         self.whitelisted_addresses().clear();
         
         // Add new addresses to whitelist
-        let whitelist = self.whitelisted_addresses();
+        let mut whitelist = self.whitelisted_addresses();
         for address in new_whitelist {
             whitelist.insert(address);
         }
@@ -60,7 +63,7 @@ pub trait AssetLoan {
     #[only_owner]
     #[endpoint(removeFromWhitelist)]
     fn remove_from_whitelist(&self, address: ManagedAddress) {
-        self.whitelisted_addresses().remove(&address);
+        self.whitelisted_addresses().swap_remove(&address);
     }
 
     #[view(isWhitelisted)]
@@ -100,7 +103,8 @@ pub trait AssetLoan {
     #[endpoint(changeAssetStatus)]
     fn change_asset_status(&self, code: ManagedBuffer, new_status: Status) {
         // Get the asset
-        let mut asset = self.asset(&code).get().unwrap_or_else(|| sc_panic!("Asset not found"));
+        require!(!self.asset(&code).is_empty(), "Asset not found");
+        let mut asset = self.asset(&code).get();
         
         // Update the status
         asset.status = new_status;
@@ -117,7 +121,8 @@ pub trait AssetLoan {
         borrower: ManagedAddress,
         duration: u64,
     ) {
-        let mut asset = self.asset(&asset_code).get().unwrap_or_else(|| sc_panic!("Asset not found"));
+        require!(!self.asset(&asset_code).is_empty(), "Asset not found");
+        let mut asset = self.asset(&asset_code).get();
         require!(asset.status == Status::Available, "Asset is not available for loan");
         
         let current_timestamp = self.blockchain().get_block_timestamp();
@@ -133,7 +138,8 @@ pub trait AssetLoan {
     #[endpoint(returnAsset)]
     fn return_asset(&self, asset_code: ManagedBuffer) {
         let caller = self.blockchain().get_caller();
-        let mut asset = self.asset(&asset_code).get().unwrap_or_else(|| sc_panic!("Asset not found"));
+        require!(!self.asset(&asset_code).is_empty(), "Asset not found");
+        let mut asset = self.asset(&asset_code).get();
         
         require!(
             asset.borrower.clone().unwrap_or_else(|| sc_panic!("No borrower")) == caller,
@@ -161,8 +167,8 @@ pub trait AssetLoan {
         let mut result = MultiValueEncoded::new();
         
         for asset_code in self.owner_assets(&caller).iter() {
-            if let Some(asset) = self.asset(&asset_code).get() {
-                result.push(asset);
+            if !self.asset(&asset_code).is_empty() {
+                result.push(self.asset(&asset_code).get());
             }
         }
         

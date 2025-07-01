@@ -1,0 +1,1 @@
+Option<multiversx_sc::types::ManagedAddress<<Self as multiversx_sc::contract_base::ContractBase>::Api>>
