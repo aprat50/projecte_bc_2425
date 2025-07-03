@@ -122,10 +122,6 @@
                     "type": "bytes"
                 },
                 {
-                    "name": "borrower",
-                    "type": "Address"
-                },
-                {
                     "name": "duration",
                     "type": "u64"
                 }

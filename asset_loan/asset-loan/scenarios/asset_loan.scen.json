@@ -1,19 +1,27 @@
 {
-    "name": "empty",
+    "name": "asset loan scenario",
     "steps": [
         {
             "step": "setState",
             "accounts": {
                 "address:owner": {
-                    "nonce": "1",
+                    "nonce": "0",
+                    "balance": "0"
+                },
+                "address:alice": {
+                    "nonce": "0",
+                    "balance": "0"
+                },
+                "address:bob": {
+                    "nonce": "0",
                     "balance": "0"
                 }
             },
             "newAddresses": [
                 {
                     "creatorAddress": "address:owner",
-                    "creatorNonce": "1",
-                    "newAddress": "sc:empty"
+                    "creatorNonce": "0",
+                    "newAddress": "sc:asset_loan"
                 }
             ]
         },
@@ -22,14 +30,209 @@
             "id": "deploy",
             "tx": {
                 "from": "address:owner",
-                "contractCode": "mxsc:../output/asset-loan.mxsc.json",
-                "arguments": [],
+                "contractCode": "file:output/asset-loan.wasm",
+                "arguments": [
+                    "address:alice",
+                    "address:bob"
+                ],
                 "gasLimit": "5,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [],
-                "status": "",
+                "status": "0",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "register-asset-1",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:asset_loan",
+                "function": "registerAsset",
+                "arguments": [
+                    "str:ASSET-001",
+                    "str:Laptop",
+                    "str:Office-1"
+                ],
+                "gasLimit": "5,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "0",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "register-loan",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:asset_loan",
+                "function": "registerLoan",
+                "arguments": [
+                    "str:ASSET-001",
+                    "address:alice",
+                    "100"
+                ],
+                "gasLimit": "5,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "0",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "check-asset-after-loan",
+            "tx": {
+                "from": "address:alice",
+                "to": "sc:asset_loan",
+                "function": "getAsset",
+                "arguments": [
+                    "str:ASSET-001"
+                ],
+                "gasLimit": "5,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    {
+                        "0-code": "str:ASSET-001",
+                        "1-name": "str:Laptop",
+                        "2-location": "str:Office-1",
+                        "3-status": "2",
+                        "4-owner": "address:owner",
+                        "5-borrower": "address:alice",
+                        "6-loan_end_timestamp": "*"
+                    }
+                ],
+                "status": "0",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "return-asset",
+            "tx": {
+                "from": "address:alice",
+                "to": "sc:asset_loan",
+                "function": "returnAsset",
+                "arguments": [
+                    "str:ASSET-001"
+                ],
+                "gasLimit": "5,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "0",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "check-asset-after-return",
+            "tx": {
+                "from": "address:alice",
+                "to": "sc:asset_loan",
+                "function": "getAsset",
+                "arguments": [
+                    "str:ASSET-001"
+                ],
+                "gasLimit": "5,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    {
+                        "0-code": "str:ASSET-001",
+                        "1-name": "str:Laptop",
+                        "2-location": "str:Office-1",
+                        "3-status": "0",
+                        "4-owner": "address:owner",
+                        "5-borrower": null,
+                        "6-loan_end_timestamp": null
+                    }
+                ],
+                "status": "0",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "check-whitelist",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:asset_loan",
+                "function": "isWhitelisted",
+                "arguments": [
+                    "address:alice"
+                ],
+                "gasLimit": "5,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["true"],
+                "status": "0",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "remove-from-whitelist",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:asset_loan",
+                "function": "removeFromWhitelist",
+                "arguments": [
+                    "address:alice"
+                ],
+                "gasLimit": "5,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "0",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "check-whitelist-after-remove",
+            "tx": {
+                "from": "address:owner",
+                "to": "sc:asset_loan",
+                "function": "isWhitelisted",
+                "arguments": [
+                    "address:alice"
+                ],
+                "gasLimit": "5,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["false"],
+                "status": "0",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"

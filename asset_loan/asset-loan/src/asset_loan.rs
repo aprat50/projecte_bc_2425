@@ -118,7 +118,6 @@ pub trait AssetLoan {
     fn register_loan(
         &self,
         asset_code: ManagedBuffer,
-        borrower: ManagedAddress,
         duration: u64,
     ) {
         require!(!self.asset(&asset_code).is_empty(), "Asset not found");
@@ -126,10 +125,11 @@ pub trait AssetLoan {
         require!(asset.status == Status::Available, "Asset is not available for loan");
         
         let current_timestamp = self.blockchain().get_block_timestamp();
+        let caller = self.blockchain().get_caller();
         
         // Update asset
         asset.status = Status::Loan;
-        asset.borrower = Some(borrower);
+        asset.borrower = Some(caller);
         asset.loan_end_timestamp = Some(current_timestamp + duration);
         
         self.asset(&asset_code).set(asset);
@@ -137,8 +137,9 @@ pub trait AssetLoan {
 
     #[endpoint(returnAsset)]
     fn return_asset(&self, asset_code: ManagedBuffer) {
-        let caller = self.blockchain().get_caller();
+        
         require!(!self.asset(&asset_code).is_empty(), "Asset not found");
+        let caller = self.blockchain().get_caller();
         let mut asset = self.asset(&asset_code).get();
         
         require!(
