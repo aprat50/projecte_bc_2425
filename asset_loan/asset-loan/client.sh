@@ -19,6 +19,20 @@ hex_to_decimal() {
   fi
 }
 
+hex_to_str()
+{
+  local hex_value=$1
+  if [[ $hex_value == "0x"* ]]; then
+    hex_value=${hex_value#0x}
+  fi
+  if [[ -z "$hex_value" || "$hex_value" == "00" || "$hex_value" == "" ]]; then
+    echo ""
+  else
+    # Usar python para manejar números grandes
+    python3 -c "print(bytes.fromhex($hex_value).decode('utf-8'))" 2>/dev/null || echo ""
+  fi
+
+}
 # Función para convertir timestamp a fecha formato dd/MM/yy hh:mm:ss
 timestamp_to_date() {
   local timestamp=$1
@@ -244,11 +258,9 @@ get_my_assets() {
 }
 
 get_asset() {
-  echo "=== Consultar actiu ==="
-  read -p "Codi de l'actiu: " code
-  
+
   # Convert input to hex string
-  hex_code=$(echo -n "$code" | xxd -p)
+  hex_code=$(echo -n "$1" | xxd -p)
   
   result=$(mxpy contract query $CONTRACT \
     --function "getAsset" \
@@ -259,7 +271,7 @@ get_asset() {
     if [[ $(echo "$result" | jq '. | length') -eq 0 ]]; then
       echo "Actiu no trobat"
     else
-      display_asset "$result"
+      echo "$result"
     fi
   else
     echo "Error al consultar l'actiu"
@@ -272,7 +284,7 @@ get_owner_assets() {
   
   result=$(mxpy contract query $CONTRACT \
     --function "getOwnerAssets" \
-    --arguments $owner_address \
+    --arguments "addr:"$owner_address \
     --proxy $PROXY 2>/dev/null)
   
   if [[ $? -eq 0 ]]; then
@@ -281,15 +293,9 @@ get_owner_assets() {
     else
       echo "Actius trobats:"
       echo "$result" | jq -c '.[]' | while read -r asset_code; do
-        # Get detailed asset info for each code
-        asset_result=$(mxpy contract query $CONTRACT \
-          --function "getAsset" \
-          --arguments "$asset_code" \
-          --proxy $PROXY 2>/dev/null)
-        
-        if [[ $? -eq 0 ]]; then
-          display_asset "$asset_result"
-        fi
+        str_asset_code=$(hex_to_str $asset_code)
+
+        get_asset $str_asset_code
       done
     fi
   else
@@ -320,7 +326,10 @@ while true; do
     3) register_loan ;;
     4) return_asset ;;
     5) get_my_assets ;;
-    6) get_asset ;;
+    6) echo "=== Consultar actiu ==="
+       read -p "Codi de l'actiu: " code
+       get_asset $code
+       ;;
     7) get_owner_assets ;;
     0) echo "¡Fins aviat!"; break ;;
     *) echo "Opció no vàlida." ;;
