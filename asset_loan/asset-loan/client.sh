@@ -1,8 +1,19 @@
 #!/bin/bash
 
-CONTRACT="" # Cambia por la dirección real del SC
-PEM="./wallet.pem"      # Cambia por la ruta a tu wallet
+#DESPLEGAMENT FET AMB 
 
+# mxpy contract deploy --bytecode ./output/asset-loan.wasm \
+# --proxy=https://devnet-gateway.multiversx.com \
+# --recall-nonce \
+# --arguments addr:erd1pzx4tcnhcgp050965lmc03pg8s3300xzw3kmzja3gjmzxk499mwqqdazpp addr:erd1uwqln3hkre8x0mnzr5agq7ruvav9e237atxjnzlps7nzvyh9tnfqyqtelc
+# --gas-limit 20000000 \
+# --pem=wallet.pem \
+# --send
+
+CONTRACT="erd1qqqqqqqqqqqqqpgqf45wwxnc7pan4uakfakgcqyp2j0axjht9mwq0p5cs0" # Cambia por la dirección real del SC
+#PEM="./wallets/wallet.pem"      # Cambia por la ruta a tu wallet
+PEM="./wallets/prowallet.pem"  
+#PEM="./wallets/aluwallet.pem"  
 PROXY="https://devnet-api.multiversx.com"
 
 # Función para convertir hex a decimal (maneja números grandes)
@@ -125,18 +136,18 @@ change_asset_status() {
   echo "3) En reparació"
   read -p "Selecciona el nou estat (0-3): " status_option
 
-  # Convert status option to enum value
-  case $status_option in
-    0) status="Available" ;;
-    1) status="Cancel" ;;
-    2) status="Loan" ;;
-    3) status="Repair" ;;
-    *) echo "Opció no vàlida"; return 1 ;;
-  esac
+  # # Convert status option to enum value
+  # case $status_option in
+  #   0) status="Available" ;;
+  #   1) status="Cancel" ;;
+  #   2) status="Loan" ;;
+  #   3) status="Repair" ;;
+  #   *) echo "Opció no vàlida"; return 1 ;;
+  # esac
 
   # Convert inputs to hex strings
   hex_code=$(echo -n "$code" | xxd -p)
-  hex_status=$(echo -n "$status" | xxd -p)
+  # hex_status=$(echo -n "$status_option" | xxd -p)
 
   echo "Canviant estat de l'actiu..."
   mxpy contract call $CONTRACT \
@@ -144,7 +155,7 @@ change_asset_status() {
     --recall-nonce \
     --gas-limit=5000000 \
     --function "changeAssetStatus" \
-    --arguments "0x$hex_code" "0x$hex_status" \
+    --arguments "0x$hex_code" $status_option \
     --proxy $PROXY \
     --chain D \
     --send
@@ -157,9 +168,10 @@ change_asset_status() {
 }
 
 register_loan() {
+  # s'ha d'executar des del wallet del prestatari
   echo "=== Registrar préstec d'actiu ==="
   read -p "Codi de l'actiu: " code
-  read -p "Adreça del prestatari: " borrower
+  #read -p "Adreça del prestatari: " borrower
   read -p "Duració del préstec (en dies): " days
 
   # Convert days to seconds for the contract
@@ -174,7 +186,7 @@ register_loan() {
     --recall-nonce \
     --gas-limit=5000000 \
     --function "registerLoan" \
-    --arguments "0x$hex_code" $borrower $duration \
+    --arguments "0x$hex_code" $duration \
     --proxy $PROXY \
     --chain D \
     --send
@@ -187,6 +199,7 @@ register_loan() {
 }
 
 return_asset() {
+  #S'ha d'executar des del wallet del prestatari
   echo "=== Retornar actiu prestat ==="
   read -p "Codi de l'actiu: " code
 
@@ -311,9 +324,9 @@ while true; do
   echo "2) Canviar estat actiu (changeAssetStatus)"
   echo "3) Registrar préstec (registerLoan)"
   echo "4) Retornar actiu (returnAsset)"
-  echo "5) Ver actius propis (getMyAssets)"
-  echo "6) Ver actiu (getAsset)"
-  echo "7) Ver actius d'un propietari (getOwnerAssets)"
+  echo "5) Veure actius propis (getMyAssets)"
+  echo "6) Veure actiu (getAsset)"
+  echo "7) Veure actius d'un propietari (getOwnerAssets)"
   echo "0) Sortir"
   echo "================================"
   read -p "Tria una opció: " opcio
