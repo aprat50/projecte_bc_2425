@@ -1,0 +1,3 @@
+multiversx_sc::types::managed::basic::managed_buffer::ManagedBuffer<<Self as contract_base::contract_base_trait::ContractBase>::Api>
+multiversx_sc::types::ManagedBuffer<<Self as multiversx_sc::contract_base::ContractBase>::Api>: From<u64>
+multiversx_sc::types::ManagedBuffer<<Self as multiversx_sc::contract_base::ContractBase>::Api>
