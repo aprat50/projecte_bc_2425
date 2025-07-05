@@ -3,6 +3,7 @@
 multiversx_sc::imports!();
 multiversx_sc::derive_imports!();
 
+use core::fmt::Write;
 
 // Status of the asset
 #[type_abi]
@@ -187,4 +188,6 @@ pub trait AssetLoan {
 
     #[storage_mapper("whitelisted_addresses")]
     fn whitelisted_addresses(&self) -> UnorderedSetMapper<ManagedAddress>;
+
+
 }

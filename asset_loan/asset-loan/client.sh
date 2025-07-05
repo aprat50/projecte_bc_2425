@@ -5,15 +5,17 @@
 # mxpy contract deploy --bytecode ./output/asset-loan.wasm \
 # --proxy=https://devnet-gateway.multiversx.com \
 # --recall-nonce \
-# --arguments addr:erd1pzx4tcnhcgp050965lmc03pg8s3300xzw3kmzja3gjmzxk499mwqqdazpp addr:erd1uwqln3hkre8x0mnzr5agq7ruvav9e237atxjnzlps7nzvyh9tnfqyqtelc
+# --arguments addr:erd1pzx4tcnhcgp050965lmc03pg8s3300xzw3kmzja3gjmzxk499mwqqdazpp addr:erd1uwqln3hkre8x0mnzr5agq7ruvav9e237atxjnzlps7nzvyh9tnfqyqtelc addr:erd19dwqnvn2lcw35kagrehe3axqatdth0j48z8hsjgzs6kwsa9esu3q5884gh \
 # --gas-limit 20000000 \
 # --pem=wallet.pem \
 # --send
 
-CONTRACT="erd1qqqqqqqqqqqqqpgqf45wwxnc7pan4uakfakgcqyp2j0axjht9mwq0p5cs0" # Cambia por la dirección real del SC
-#PEM="./wallets/wallet.pem"      # Cambia por la ruta a tu wallet
-PEM="./wallets/prowallet.pem"  
-#PEM="./wallets/aluwallet.pem"  
+CONTRACT="erd1qqqqqqqqqqqqqpgqf45wwxnc7pan4uakfakgcqyp2j0axjht9mwq0p5cs0" # ORIGINAL
+#CONTRACT="erd1qqqqqqqqqqqqqpgq4uh7svh9xnelr7xyf64zej20wuahj5vesu3qgtefau" #  PROVA JSON
+PEM="./wallets/wallet.pem"      # Cambia por la ruta a tu wallet
+#PEM="./wallets/prowallet.pem"  
+#PEM="./wallets/aluwallet.pem" 
+#PEM="./wallets/walletnew.pem"
 PROXY="https://devnet-api.multiversx.com"
 
 # Función para convertir hex a decimal (maneja números grandes)
@@ -70,30 +72,6 @@ parse_status() {
   esac
 }
 
-
-# status() {
-#   echo "Consultando estado del contrato..."
-#   result=$(mxpy contract query $CONTRACT \
-#     --function status \
-#     --proxy $PROXY 2>/dev/null)
-  
-#   if [[ $? -eq 0 ]]; then
-#     # Extraer el valor hexadecimal de la respuesta (formato: ["hex_value"])
-#     hex_status=$(echo "$result" | grep -o '"[^"]*"' | head -1 | tr -d '"')
-    
-#     if [[ -n "$hex_status" && "$hex_status" != "" ]]; then
-#       # Convertir hex a decimal para determinar el estado
-#       decimal_status=$(hex_to_decimal "$hex_status")
-#       parsed_status=$(parse_status "$decimal_status")
-#       echo "Estado: $parsed_status"
-#     else
-#       parsed_status=$(parse_status "")
-#       echo "Estado: $parsed_status"
-#     fi
-#   else
-#     echo "Error al consultar el estado"
-#   fi
-# }
 
 # Registrar nou actiu
 register_asset() {
@@ -284,7 +262,8 @@ get_asset() {
     if [[ $(echo "$result" | jq '. | length') -eq 0 ]]; then
       echo "Actiu no trobat"
     else
-      echo "$result"
+      echo $result
+      display_asset $result
     fi
   else
     echo "Error al consultar l'actiu"
