@@ -18,7 +18,7 @@ PEM="./wallets/wallet.pem"      # Cambia por la ruta a tu wallet
 #PEM="./wallets/walletnew.pem"
 PROXY="https://devnet-api.multiversx.com"
 
-# Función para convertir hex a decimal (maneja números grandes)
+# Funció para convertir hex a decimal (maneja números grandes)
 hex_to_decimal() {
   local hex_value=$1
   if [[ $hex_value == "0x"* ]]; then
@@ -46,7 +46,7 @@ hex_to_str()
   fi
 
 }
-# Función para convertir timestamp a fecha formato dd/MM/yy hh:mm:ss
+# Funció para convertir timestamp a fecha formato dd/MM/yy hh:mm:ss
 timestamp_to_date() {
   local timestamp=$1
   if [[ $timestamp -eq 0 ]]; then
@@ -282,26 +282,6 @@ display_asset() {
   echo "----------------------------------------"
 }
 
-get_my_assets() {
-  echo "=== Els meus actius ==="
-  
-  result=$(mxpy contract query $CONTRACT \
-    --function "getMyAssets" \
-    --proxy $PROXY 2>/dev/null)
-  
-  if [[ $? -eq 0 ]]; then
-    if [[ $(echo "$result" | jq '. | length') -eq 0 ]]; then
-      echo "No tens cap actiu registrat"
-    else
-      echo "$result" | jq -c '.[]' | while read -r asset; do
-        display_asset "$asset"
-      done
-    fi
-  else
-    echo "Error al consultar els actius"
-  fi
-}
-
 get_asset() {
 
   # Convert input to hex string
@@ -316,8 +296,7 @@ get_asset() {
     if [[ $(echo "$result" | jq '. | length') -eq 0 ]]; then
       echo "Actiu no trobat"
     else
-      echo $result
-      display_asset $result
+      echo "Actiu: $result"
     fi
   else
     echo "Error al consultar l'actiu"
@@ -340,12 +319,31 @@ get_owner_assets() {
       echo "Actius trobats:"
       echo "$result" | jq -c '.[]' | while read -r asset_code; do
         str_asset_code=$(hex_to_str $asset_code)
-
         get_asset $str_asset_code
       done
     fi
   else
     echo "Error al consultar els actius del propietari"
+  fi
+}
+
+get_whitelist() {
+  echo "=== Llista blanca actual ==="
+
+  result=$(mxpy contract query $CONTRACT \
+    --function "getWhitelist" \
+    --proxy $PROXY 2>/dev/null)
+
+  if [[ $? -eq 0 ]]; then
+    if [[ $(echo "$result" | jq 'length') -eq 0 ]]; then
+      echo "La llista blanca està buida."
+    else
+      echo "Adreces a la whitelist:"
+      echo "$result" | jq -r '.[]' | while read -r addr; do
+        echo "- $addr"
+    fi
+  else
+    echo "Error al consultar la llista blanca."
   fi
 }
 
@@ -362,6 +360,7 @@ while true; do
   echo "------------------------------------------------"
   echo "7) Afegir a la llista blanca (addToWhitelist)"
   echo "8) Eliminar de la llista blanca (removeFromWhitelist)"
+  echo "9) Veure llista blanca (getWhitelist)"
   echo "------------------------------------------------"
   echo "0) Sortir"
   echo "================================================="
@@ -381,6 +380,7 @@ while true; do
     6) get_owner_assets ;;
     7) add_to_whitelist ;;
     8) remove_from_whitelist ;;
+    9) get_whitelist ;;
     0) echo "¡Fins aviat!"; break ;;
     *) echo "Opció no vàlida." ;;
   esac

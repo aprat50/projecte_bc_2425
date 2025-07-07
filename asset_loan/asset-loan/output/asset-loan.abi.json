@@ -151,6 +151,17 @@
             ]
         },
         {
+            "name": "getWhitelist",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<Address>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
             "name": "getAsset",
             "mutability": "readonly",
             "inputs": [
