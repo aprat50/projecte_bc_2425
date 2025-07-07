@@ -203,6 +203,60 @@ return_asset() {
   fi
 }
 
+add_to_whitelist() {
+  echo "=== Afegir adreça a la llista blanca ==="
+  read -p "Introdueix l'adreça a afegir: " address
+
+  if [[ -z "$address" ]]; then
+    echo "Adreça buida. Operació cancel·lada."
+    return 1
+  fi
+
+  echo "Afegint $address a la whitelist..."
+  mxpy contract call $CONTRACT \
+    --pem $PEM \
+    --recall-nonce \
+    --gas-limit=5000000 \
+    --function "addToWhitelist" \
+    --arguments "addr:$address" \
+    --proxy $PROXY \
+    --chain D \
+    --send
+
+  if [[ $? -eq 0 ]]; then
+    echo "Adreça afegida correctament a la whitelist."
+  else
+    echo "Error en afegir l'adreça a la whitelist."
+  fi
+}
+
+remove_from_whitelist() {
+  echo "=== Eliminar adreça de la llista blanca ==="
+  read -p "Introdueix l'adreça a eliminar: " address
+
+  if [[ -z "$address" ]]; then
+    echo "Adreça buida. Operació cancel·lada."
+    return 1
+  fi
+
+  echo "Eliminant $address de la whitelist..."
+  mxpy contract call $CONTRACT \
+    --pem $PEM \
+    --recall-nonce \
+    --gas-limit=5000000 \
+    --function "removeFromWhitelist" \
+    --arguments "addr:$address" \
+    --proxy $PROXY \
+    --chain D \
+    --send
+
+  if [[ $? -eq 0 ]]; then
+    echo "Adreça eliminada correctament de la whitelist."
+  else
+    echo "Error en eliminar l'adreça de la whitelist."
+  fi
+}
+
 # Funció per mostrar els actius de forma llegible
 display_asset() {
   local asset_json=$1
@@ -303,11 +357,14 @@ while true; do
   echo "2) Canviar estat actiu (changeAssetStatus)"
   echo "3) Registrar préstec (registerLoan)"
   echo "4) Retornar actiu (returnAsset)"
-  echo "5) Veure actius propis (getMyAssets)"
-  echo "6) Veure actiu (getAsset)"
-  echo "7) Veure actius d'un propietari (getOwnerAssets)"
+  echo "5) Veure actiu (getAsset)"
+  echo "6) Veure actius d'un propietari (getOwnerAssets)"
+  echo "------------------------------------------------"
+  echo "7) Afegir a la llista blanca (addToWhitelist)"
+  echo "8) Eliminar de la llista blanca (removeFromWhitelist)"
+  echo "------------------------------------------------"
   echo "0) Sortir"
-  echo "================================"
+  echo "================================================="
   read -p "Tria una opció: " opcio
   
 
@@ -317,12 +374,13 @@ while true; do
     2) change_asset_status ;;
     3) register_loan ;;
     4) return_asset ;;
-    5) get_my_assets ;;
-    6) echo "=== Consultar actiu ==="
+    5) echo "=== Consultar actiu ==="
        read -p "Codi de l'actiu: " code
        get_asset $code
        ;;
-    7) get_owner_assets ;;
+    6) get_owner_assets ;;
+    7) add_to_whitelist ;;
+    8) remove_from_whitelist ;;
     0) echo "¡Fins aviat!"; break ;;
     *) echo "Opció no vàlida." ;;
   esac

@@ -3,8 +3,6 @@
 multiversx_sc::imports!();
 multiversx_sc::derive_imports!();
 
-use core::fmt::Write;
-
 // Status of the asset
 #[type_abi]
 #[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, PartialEq)]
@@ -175,6 +173,11 @@ pub trait AssetLoan {
         }
         
         result
+    }
+    
+    #[view(getWhitelist)]
+    fn get_whitelist(&self) -> MultiValueEncoded<ManagedAddress> {
+        self.whitelisted_addresses().iter().collect()
     }
     
     // Storage  
