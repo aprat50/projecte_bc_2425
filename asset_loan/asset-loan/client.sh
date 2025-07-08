@@ -12,9 +12,9 @@
 
 CONTRACT="erd1qqqqqqqqqqqqqpgqf45wwxnc7pan4uakfakgcqyp2j0axjht9mwq0p5cs0" # ORIGINAL
 #CONTRACT="erd1qqqqqqqqqqqqqpgq4uh7svh9xnelr7xyf64zej20wuahj5vesu3qgtefau" #  PROVA JSON
-PEM="./wallets/wallet.pem"      # Cambia por la ruta a tu wallet
+#EM="./wallets/wallet.pem"      # Cambia por la ruta a tu wallet
 #PEM="./wallets/prowallet.pem"  
-#PEM="./wallets/aluwallet.pem" 
+PEM="./wallets/aluwallet.pem" 
 #PEM="./wallets/walletnew.pem"
 PROXY="https://devnet-api.multiversx.com"
 
@@ -63,7 +63,8 @@ timestamp_to_date() {
 # adaptar a l'status els assets
 parse_status() {
   local status=$1
-  case $status in
+  local discriminant=$(echo $status | jq '.__discriminant__')
+  case $discriminant in
     ""|"00"|"0") echo "Disponible" ;;
     "01"|"1") echo "Cancelat (baixa)" ;;
     "02"|"2") echo "En préstec" ;;
@@ -260,12 +261,12 @@ remove_from_whitelist() {
 # Funció per mostrar els actius de forma llegible
 display_asset() {
   local asset_json=$1
-  local code=$(echo "$asset_json" | jq -r '.code')
-  local name=$(echo "$asset_json" | jq -r '.name')
-  local location=$(echo "$asset_json" | jq -r '.location')
-  local status_hex=$(echo "$asset_json" | jq -r '.status')
-  local owner=$(echo "$asset_json" | jq -r '.owner')
-  local borrower=$(echo "$asset_json" | jq -r '.borrower')
+  local code=$(hex_to_str $(echo $asset_json | jq '.code'))
+  local name=$(hex_to_str $(echo "$asset_json" | jq '.name'))
+  local location=$(hex_to_str $(echo "$asset_json" | jq '.location'))
+  local status_hex=$(echo "$asset_json" | jq '.status')
+  local owner=$(echo "$asset_json" | jq '.owner')
+  local borrower=$(echo "$asset_json" | jq '.borrower')
   local loan_end=$(echo "$asset_json" | jq -r '.loan_end_timestamp')
 
   echo "Codi: $code"
@@ -274,7 +275,7 @@ display_asset() {
   echo "Estat: $(parse_status "$status_hex")"
   echo "Propietari: $owner"
   if [ "$borrower" != "null" ]; then
-    echo "Prestatari: $borrower"
+  echo "Prestatari: $borrower"
     if [ "$loan_end" != "null" ]; then
       echo "Fi del préstec: $(timestamp_to_date "$loan_end")"
     fi
@@ -290,13 +291,14 @@ get_asset() {
   result=$(mxpy contract query $CONTRACT \
     --function "getAsset" \
     --arguments "0x$hex_code" \
+    --abi ./output/asset-loan.abi.json \
     --proxy $PROXY 2>/dev/null)
   
   if [[ $? -eq 0 ]]; then
     if [[ $(echo "$result" | jq '. | length') -eq 0 ]]; then
       echo "Actiu no trobat"
     else
-      echo "Actiu: $result"
+      display_asset $(echo "$result" | jq -c '.[]' )
     fi
   else
     echo "Error al consultar l'actiu"
@@ -341,6 +343,7 @@ get_whitelist() {
       echo "Adreces a la whitelist:"
       echo "$result" | jq -r '.[]' | while read -r addr; do
         echo "- $addr"
+      done
     fi
   else
     echo "Error al consultar la llista blanca."
