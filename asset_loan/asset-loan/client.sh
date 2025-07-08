@@ -12,9 +12,9 @@
 
 CONTRACT="erd1qqqqqqqqqqqqqpgqf45wwxnc7pan4uakfakgcqyp2j0axjht9mwq0p5cs0" # ORIGINAL
 #CONTRACT="erd1qqqqqqqqqqqqqpgq4uh7svh9xnelr7xyf64zej20wuahj5vesu3qgtefau" #  PROVA JSON
-#EM="./wallets/wallet.pem"      # Cambia por la ruta a tu wallet
+PEM="./wallets/wallet.pem"      # Cambia por la ruta a tu wallet
 #PEM="./wallets/prowallet.pem"  
-PEM="./wallets/aluwallet.pem" 
+#PEM="./wallets/aluwallet.pem" 
 #PEM="./wallets/walletnew.pem"
 PROXY="https://devnet-api.multiversx.com"
 
