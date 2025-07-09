@@ -12,9 +12,9 @@
 
 CONTRACT="erd1qqqqqqqqqqqqqpgqf45wwxnc7pan4uakfakgcqyp2j0axjht9mwq0p5cs0" # ORIGINAL
 #CONTRACT="erd1qqqqqqqqqqqqqpgq4uh7svh9xnelr7xyf64zej20wuahj5vesu3qgtefau" #  PROVA JSON
-PEM="./wallets/wallet.pem"      # Cambia por la ruta a tu wallet
+#PEM="./wallets/wallet.pem"      # Cambia por la ruta a tu wallet
 #PEM="./wallets/prowallet.pem"  
-#PEM="./wallets/aluwallet.pem" 
+PEM="./wallets/aluwallet.pem" 
 #PEM="./wallets/walletnew.pem"
 PROXY="https://devnet-api.multiversx.com"
 
@@ -73,6 +73,69 @@ parse_status() {
   esac
 }
 
+query_transaction_info() {
+  tx_hash=$1
+
+  if [[ -z "$tx_hash" ]]; then
+    echo ""
+  fi
+
+  response=$(curl -s "$PROXY/transactions/$tx_hash")
+  if [[ -z "$response" || "$response" == "null" ]]; then
+    echo ""
+  else
+    echo "$response" | jq
+  fi
+}
+
+transaction_validation()
+{   
+    # Validar que la transacció s'ha completat correctament
+    if [[ -s ./logs/transaction.json ]]; then
+       output=$(cat ./logs/transaction.json)
+       info=$(query_transaction_info $(echo "$output" | jq -r '.emittedTransactionHash'))
+
+       if [[ -z $info ]] then
+         echo ""
+       else
+         transstatus=$(echo "$info" | jq -r '.status')
+         if [[ $transstatus -eq "fail" ]] then
+            echo "Transacció fallida"
+            transerrm=$(echo $(echo "$(echo "$info" | jq -r '.operations')" | jq -r '.[]') | jq -r '.message')
+            echo "Missatge: $transerrm"
+         else 
+            echo $1
+         fi
+       fi
+    else
+      output=""
+    fi
+}
+
+# Funció per mostrar els actius de forma llegible
+display_asset() {
+  local asset_json=$1
+  local code=$(hex_to_str $(echo $asset_json | jq '.code'))
+  local name=$(hex_to_str $(echo "$asset_json" | jq '.name'))
+  local location=$(hex_to_str $(echo "$asset_json" | jq '.location'))
+  local status_hex=$(echo "$asset_json" | jq '.status')
+  local owner=$(echo "$asset_json" | jq '.owner')
+  local borrower=$(echo "$asset_json" | jq '.borrower')
+  local loan_end=$(echo "$asset_json" | jq -r '.loan_end_timestamp')
+
+  echo "Codi: $code"
+  echo "Nom: $name"
+  echo "Ubicació: $location"
+  echo "Estat: $(parse_status "$status_hex")"
+  echo "Propietari: $owner"
+  if [ "$borrower" != "null" ]; then
+  echo "Prestatari: $borrower"
+    if [ "$loan_end" != "null" ]; then
+      echo "Fi del préstec: $(timestamp_to_date "$loan_end")"
+    fi
+  fi
+  echo "----------------------------------------"
+}
 
 # Registrar nou actiu
 register_asset() {
@@ -95,10 +158,12 @@ register_asset() {
     --arguments "0x$hex_code" "0x$hex_name" "0x$hex_location" \
     --proxy $PROXY \
     --chain D \
-    --send
+    --send \
+    --outfile "./logs/transaction.json" \
+    --wait-result
 
   if [[ $? -eq 0 ]]; then
-    echo "Actiu registrat correctament"
+    transaction_validation "Actiu registrat correctament"
   else
     echo "Error al registrar l'actiu"
   fi
@@ -137,12 +202,15 @@ change_asset_status() {
     --arguments "0x$hex_code" $status_option \
     --proxy $PROXY \
     --chain D \
-    --send
+    --send \
+    --outfile "./logs/transaction.json" \
+    --wait-result
 
   if [[ $? -eq 0 ]]; then
-    echo "Estat de l'actiu canviat correctament"
+    transaction_validation "L'estat de l'actiu s'ha canviat correctament"
   else
     echo "Error al canviar l'estat de l'actiu"
+
   fi
 }
 
@@ -168,10 +236,12 @@ register_loan() {
     --arguments "0x$hex_code" $duration \
     --proxy $PROXY \
     --chain D \
-    --send
+    --send \
+    --outfile "./logs/transaction.json" \
+    --wait-result 
 
   if [[ $? -eq 0 ]]; then
-    echo "Préstec registrat correctament"
+   transaction_validation "Préstec registrat correctament"
   else
     echo "Error al registrar el préstec"
   fi
@@ -194,10 +264,12 @@ return_asset() {
     --arguments "0x$hex_code" \
     --proxy $PROXY \
     --chain D \
-    --send
+    --send \ 
+    --outfile "./logs/transaction.json" \
+    --wait-result
 
   if [[ $? -eq 0 ]]; then
-    echo "Actiu retornat correctament"
+    transaction_validation "Actiu retornat correctament"
   else
     echo "Error al retornar l'actiu"
     echo "Nota: Només el prestatari actual pot retornar l'actiu"
@@ -222,10 +294,12 @@ add_to_whitelist() {
     --arguments "addr:$address" \
     --proxy $PROXY \
     --chain D \
-    --send
+    --send \
+    --outfile "./logs/transaction.json" \
+    --wait-result
 
   if [[ $? -eq 0 ]]; then
-    echo "Adreça afegida correctament a la whitelist."
+    transaction_validation "L'adreça s'ha afegit amb èxit"
   else
     echo "Error en afegir l'adreça a la whitelist."
   fi
@@ -249,39 +323,97 @@ remove_from_whitelist() {
     --arguments "addr:$address" \
     --proxy $PROXY \
     --chain D \
-    --send
+    --send \
+    --outfile "./logs/transaction.json" \
+    --wait-result
 
   if [[ $? -eq 0 ]]; then
-    echo "Adreça eliminada correctament de la whitelist."
+    transaction_validation "L'adreça s'ha eliminat amb èxit"
   else
     echo "Error en eliminar l'adreça de la whitelist."
   fi
 }
 
-# Funció per mostrar els actius de forma llegible
-display_asset() {
-  local asset_json=$1
-  local code=$(hex_to_str $(echo $asset_json | jq '.code'))
-  local name=$(hex_to_str $(echo "$asset_json" | jq '.name'))
-  local location=$(hex_to_str $(echo "$asset_json" | jq '.location'))
-  local status_hex=$(echo "$asset_json" | jq '.status')
-  local owner=$(echo "$asset_json" | jq '.owner')
-  local borrower=$(echo "$asset_json" | jq '.borrower')
-  local loan_end=$(echo "$asset_json" | jq -r '.loan_end_timestamp')
+add_to_admin_whitelist() {
+  echo "=== Afegir adreça a la admin whitelist ==="
+  read -p "Introdueix l'adreça a afegir: " address
 
-  echo "Codi: $code"
-  echo "Nom: $name"
-  echo "Ubicació: $location"
-  echo "Estat: $(parse_status "$status_hex")"
-  echo "Propietari: $owner"
-  if [ "$borrower" != "null" ]; then
-  echo "Prestatari: $borrower"
-    if [ "$loan_end" != "null" ]; then
-      echo "Fi del préstec: $(timestamp_to_date "$loan_end")"
-    fi
+  if [[ -z "$address" ]]; then
+    echo "Adreça buida. Operació cancel·lada."
+    return 1
   fi
-  echo "----------------------------------------"
+
+  echo "Afegint $address a la admin whitelist..."
+  mxpy contract call $CONTRACT \
+    --pem $PEM \
+    --recall-nonce \
+    --gas-limit=5000000 \
+    --function "addToAdminWhitelist" \
+    --arguments "addr:$address" \
+    --proxy $PROXY \
+    --chain D \
+    --send \
+    --outfile "./logs/transaction.json" \
+    --wait-result
+
+  if [[ $? -eq 0 ]]; then
+    transaction_validation "L'adreça s'ha afegit amb èxit"
+  else
+    echo "Error en afegir l'adreça a la admin whitelist."
+  fi
 }
+
+remove_from_admin_whitelist() {
+  echo "=== Eliminar adreça de la admin whitelist ==="
+  read -p "Introdueix l'adreça a eliminar: " address
+
+  if [[ -z "$address" ]]; then
+    echo "Adreça buida. Operació cancel·lada."
+    return 1
+  fi
+
+  echo "Eliminant $address de la admin whitelist..."
+  mxpy contract call $CONTRACT \
+    --pem $PEM \
+    --recall-nonce \
+    --gas-limit=5000000 \
+    --function "removeFromAdminWhitelist" \
+    --arguments "addr:$address" \
+    --proxy $PROXY \
+    --chain D \
+    --send \
+    --outfile "./logs/transaction.json" \
+    --wait-result
+
+  if [[ $? -eq 0 ]]; then
+    transaction_validation "L'adreça s'ha eliminat amb èxit"
+  else
+    echo "Error en eliminar l'adreça de la admin whitelist."
+  fi
+}
+
+get_admin_whitelist() {
+  echo "=== Llista admin whitelist actual ==="
+
+  result=$(mxpy contract query $CONTRACT \
+    --function "getAdminWhitelist" \
+    --proxy $PROXY 2>/dev/null)
+
+  if [[ $? -eq 0 ]]; then
+    if [[ $(echo "$result" | jq 'length') -eq 0 ]]; then
+      echo "La admin whitelist està buida."
+    else
+      echo "Adreces a la admin whitelist:"
+      echo "$result" | jq -r '.[]' | while read -r addr; do
+        echo "- $addr"
+      done
+    fi
+  else
+    echo "Error al consultar la admin whitelist."
+  fi
+}
+
+
 
 get_asset() {
 
@@ -365,6 +497,12 @@ while true; do
   echo "8) Eliminar de la llista blanca (removeFromWhitelist)"
   echo "9) Veure llista blanca (getWhitelist)"
   echo "------------------------------------------------"
+  echo "10) Afegir a la admin whitelist (addToAdminWhitelist)"
+  echo "11) Eliminar de la admin whitelist (removeFromAdminWhitelist)"
+  echo "12) Veure admin whitelist (getAdminWhitelist)"
+  echo "------------------------------------------------"
+  echo "13) Consultar informació de transacció (queryTransactionInfo)"
+  echo "------------------------------------------------"
   echo "0) Sortir"
   echo "================================================="
   read -p "Tria una opció: " opcio
@@ -384,6 +522,10 @@ while true; do
     7) add_to_whitelist ;;
     8) remove_from_whitelist ;;
     9) get_whitelist ;;
+    10) add_to_admin_whitelist ;;
+    11) remove_from_admin_whitelist ;;
+    12) get_admin_whitelist ;;
+    13) query_transaction_info ;;
     0) echo "¡Fins aviat!"; break ;;
     *) echo "Opció no vàlida." ;;
   esac

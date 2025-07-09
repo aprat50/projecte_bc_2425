@@ -28,38 +28,49 @@ pub struct Asset<M: ManagedTypeApi> {
 
 #[multiversx_sc::contract]
 pub trait AssetLoan {
-    // Initialize the contract with the initial whitelist of authorized addresses
+    // Initialize the contract with the initial whitelist of authorized addresses and admin addresses
+    #[allow_multiple_var_args]
     #[init]
-    fn init(&self, initial_whitelist: MultiValueEncoded<ManagedAddress>) {
+    fn init(&self, initial_whitelist: MultiValueEncoded<ManagedAddress>, initial_admins: MultiValueEncoded<ManagedAddress>) {
         // Initialize whitelist with provided addresses
         let mut whitelist = self.whitelisted_addresses();
         for address in initial_whitelist {
             whitelist.insert(address);
         }
+        // Initialize admin whitelist with provided addresses
+        let mut admin_whitelist = self.admin_whitelist();
+        for admin in initial_admins {
+            admin_whitelist.insert(admin);
+        }
     }
-
+    
+    #[allow_multiple_var_args]
     #[upgrade]
-    fn upgrade(&self, new_whitelist: MultiValueEncoded<ManagedAddress>) {
+    fn upgrade(&self, new_whitelist: MultiValueEncoded<ManagedAddress>, new_admins: MultiValueEncoded<ManagedAddress>) {
         // Clear existing whitelist
         self.whitelisted_addresses().clear();
-        
         // Add new addresses to whitelist
         let mut whitelist = self.whitelisted_addresses();
         for address in new_whitelist {
             whitelist.insert(address);
+        }
+        // Clear and re-initialize admin whitelist
+        self.admin_whitelist().clear();
+        let mut admin_whitelist = self.admin_whitelist();
+        for admin in new_admins {
+            admin_whitelist.insert(admin);
         }
     }
 
     // Endpoints
 
     // Whitelist endpoints
-    #[only_owner]
+
     #[endpoint(addToWhitelist)]
     fn add_to_whitelist(&self, address: ManagedAddress) {
         self.whitelisted_addresses().insert(address);
     }
 
-    #[only_owner]
     #[endpoint(removeFromWhitelist)]
     fn remove_from_whitelist(&self, address: ManagedAddress) {
         self.whitelisted_addresses().swap_remove(&address);
@@ -70,7 +81,12 @@ pub trait AssetLoan {
         self.whitelisted_addresses().contains(address)
     }
 
-    #[only_owner]
+    // Admin authorization check
+    fn authorized(&self) -> bool {
+        let caller = self.blockchain().get_caller();
+        self.admin_whitelist().contains(&caller)
+    }
+
     #[endpoint(registerAsset)]
     fn register_asset(
         &self,
@@ -80,6 +96,8 @@ pub trait AssetLoan {
     ) {
         let caller = self.blockchain().get_caller();
         require!(self.asset(&code).is_empty(), "Asset already registered");
+
+        require!(self.authorized(), "Caller is not an admin");
 
         let asset = Asset {
             code: code.clone(),
@@ -98,13 +116,14 @@ pub trait AssetLoan {
         self.owner_assets(&caller).insert(code);
     }
     
-    #[only_owner]
     #[endpoint(changeAssetStatus)]
     fn change_asset_status(&self, code: ManagedBuffer, new_status: Status) {
         // Get the asset
         require!(!self.asset(&code).is_empty(), "Asset not found");
         let mut asset = self.asset(&code).get();
         
+        require!(self.authorized(), "Caller is not an admin");
+
         // Update the status
         asset.status = new_status;
         
@@ -123,8 +142,12 @@ pub trait AssetLoan {
         let mut asset = self.asset(&asset_code).get();
         require!(asset.status == Status::Available, "Asset is not available for loan");
         
-        let current_timestamp = self.blockchain().get_block_timestamp();
         let caller = self.blockchain().get_caller();
+        require!(
+            self.is_whitelisted(&caller),
+            "Only whitelisted addresses can view their assets"
+        );
+        let current_timestamp = self.blockchain().get_block_timestamp();
         
         // Update asset
         asset.status = Status::Loan;
@@ -155,31 +178,44 @@ pub trait AssetLoan {
         self.asset(&asset_code).set(asset);
     }
 
-    // Views
-    #[view(getMyAssets)]
-    fn get_my_assets(&self) -> MultiValueEncoded<Asset<Self::Api>> {
-        let caller = self.blockchain().get_caller();
-        require!(
-            self.is_whitelisted(&caller),
-            "Only whitelisted addresses can view their assets"
-        );
-
-        let mut result = MultiValueEncoded::new();
-        
-        for asset_code in self.owner_assets(&caller).iter() {
-            if !self.asset(&asset_code).is_empty() {
-                result.push(self.asset(&asset_code).get());
-            }
-        }
-        
-        result
-    }
     
     #[view(getWhitelist)]
     fn get_whitelist(&self) -> MultiValueEncoded<ManagedAddress> {
         self.whitelisted_addresses().iter().collect()
     }
     
+    #[view(getAdminWhitelist)]
+    fn get_admin_whitelist(&self) -> MultiValueEncoded<ManagedAddress> {
+        self.admin_whitelist().iter().collect()
+    }
+
+    #[endpoint(addToAdminWhitelist)]
+    fn add_to_admin_whitelist(&self, address: ManagedAddress) {
+        require!(self.authorized(), "Caller is not an admin");
+        self.admin_whitelist().insert(address);
+    }
+
+    #[endpoint(removeFromAdminWhitelist)]
+    fn remove_from_admin_whitelist(&self, address: ManagedAddress) {
+        require!(self.authorized(), "Caller is not an admin");
+        self.admin_whitelist().swap_remove(&address);
+    }
+
+    // Utility: Add an address to the admin whitelist
+    fn add_admin(&self, address: ManagedAddress) {
+        self.admin_whitelist().insert(address);
+    }
+
+    // Utility: Remove an address from the admin whitelist
+    fn remove_admin(&self, address: ManagedAddress) {
+        self.admin_whitelist().swap_remove(&address);
+    }
+
+    // Utility: View all admin addresses
+    fn view_admins(&self) -> MultiValueEncoded<ManagedAddress> {
+        self.admin_whitelist().iter().collect()
+    }
+
     // Storage  
     #[view(getAsset)]
     #[storage_mapper("asset")]
@@ -191,6 +227,9 @@ pub trait AssetLoan {
 
     #[storage_mapper("whitelisted_addresses")]
     fn whitelisted_addresses(&self) -> UnorderedSetMapper<ManagedAddress>;
+
+    #[storage_mapper("admin_whitelist")]
+    fn admin_whitelist(&self) -> UnorderedSetMapper<ManagedAddress>;
 
 
 }

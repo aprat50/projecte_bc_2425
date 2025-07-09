@@ -23,6 +23,11 @@
                 "name": "initial_whitelist",
                 "type": "variadic<Address>",
                 "multi_arg": true
+            },
+            {
+                "name": "initial_admins",
+                "type": "variadic<Address>",
+                "multi_arg": true
             }
         ],
         "outputs": []
@@ -33,6 +38,11 @@
                 "name": "new_whitelist",
                 "type": "variadic<Address>",
                 "multi_arg": true
+            },
+            {
+                "name": "new_admins",
+                "type": "variadic<Address>",
+                "multi_arg": true
             }
         ],
         "outputs": []
@@ -40,7 +50,6 @@
     "endpoints": [
         {
             "name": "addToWhitelist",
-            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
                 {
@@ -52,7 +61,6 @@
         },
         {
             "name": "removeFromWhitelist",
-            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
                 {
@@ -79,7 +87,6 @@
         },
         {
             "name": "registerAsset",
-            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
                 {
@@ -99,7 +106,6 @@
         },
         {
             "name": "changeAssetStatus",
-            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
                 {
@@ -140,17 +146,6 @@
             "outputs": []
         },
         {
-            "name": "getMyAssets",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "variadic<Asset>",
-                    "multi_result": true
-                }
-            ]
-        },
-        {
             "name": "getWhitelist",
             "mutability": "readonly",
             "inputs": [],
@@ -160,6 +155,39 @@
                     "multi_result": true
                 }
             ]
+        },
+        {
+            "name": "getAdminWhitelist",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<Address>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "addToAdminWhitelist",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeFromAdminWhitelist",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
         },
         {
             "name": "getAsset",

@@ -6,9 +6,9 @@
 
 // Init:                                 1
 // Upgrade:                              1
-// Endpoints:                           11
+// Endpoints:                           13
 // Async Callback (empty):               1
-// Total number of exported functions:  14
+// Total number of exported functions:  16
 
 #![no_std]
 
@@ -27,8 +27,10 @@ multiversx_sc_wasm_adapter::endpoints! {
         changeAssetStatus => change_asset_status
         registerLoan => register_loan
         returnAsset => return_asset
-        getMyAssets => get_my_assets
         getWhitelist => get_whitelist
+        getAdminWhitelist => get_admin_whitelist
+        addToAdminWhitelist => add_to_admin_whitelist
+        removeFromAdminWhitelist => remove_from_admin_whitelist
         getAsset => asset
         getOwnerAssets => owner_assets
     )

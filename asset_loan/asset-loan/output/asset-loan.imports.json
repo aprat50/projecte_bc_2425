@@ -16,7 +16,6 @@
   "mBufferStorageLoad",
   "mBufferStorageStore",
   "managedCaller",
-  "managedOwnerAddress",
   "managedSignalError",
   "signalError",
   "smallIntFinishSigned",
