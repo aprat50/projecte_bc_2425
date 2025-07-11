@@ -35,11 +35,6 @@
     "upgradeConstructor": {
         "inputs": [
             {
-                "name": "new_whitelist",
-                "type": "variadic<Address>",
-                "multi_arg": true
-            },
-            {
                 "name": "new_admins",
                 "type": "variadic<Address>",
                 "multi_arg": true

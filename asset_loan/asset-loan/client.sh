@@ -1,21 +1,22 @@
 #!/bin/bash
 
 #DESPLEGAMENT FET AMB 
+# mxpy contract deploy 
+#      --bytecode ./output/asset-loan.wasm   
+#      --recall-nonce   
+#      --proxy=https://devnet-gateway.multiversx.com   
+#      --chain D   
+#      --gas-limit=40000000   
+#      --pem=./wallets/mainwallet.pem   
+#      --arguments addr:erd19dwqnvn2lcw35kagrehe3axqatdth0j48z8hsjgzs6kwsa9esu3q5884gh addr:erd1uwqln3hkre8x0mnzr5agq7ruvav9e237atxjnzlps7nzvyh9tnfqyqtelc    
+#      --arguments addr:erd1pzx4tcnhcgp050965lmc03pg8s3300xzw3kmzja3gjmzxk499mwqqdazpp   
+#      --send
 
-# mxpy contract deploy --bytecode ./output/asset-loan.wasm \
-# --proxy=https://devnet-gateway.multiversx.com \
-# --recall-nonce \
-# --arguments addr:erd1pzx4tcnhcgp050965lmc03pg8s3300xzw3kmzja3gjmzxk499mwqqdazpp addr:erd1uwqln3hkre8x0mnzr5agq7ruvav9e237atxjnzlps7nzvyh9tnfqyqtelc addr:erd19dwqnvn2lcw35kagrehe3axqatdth0j48z8hsjgzs6kwsa9esu3q5884gh \
-# --gas-limit 20000000 \
-# --pem=wallet.pem \
-# --send
-
-CONTRACT="erd1qqqqqqqqqqqqqpgqf45wwxnc7pan4uakfakgcqyp2j0axjht9mwq0p5cs0" # ORIGINAL
-#CONTRACT="erd1qqqqqqqqqqqqqpgq4uh7svh9xnelr7xyf64zej20wuahj5vesu3qgtefau" #  PROVA JSON
-#PEM="./wallets/wallet.pem"      # Cambia por la ruta a tu wallet
-#PEM="./wallets/prowallet.pem"  
-PEM="./wallets/aluwallet.pem" 
-#PEM="./wallets/walletnew.pem"
+CONTRACT="erd1qqqqqqqqqqqqqpgqjyynsdhq4yx8jx6unhf505j2h2nqmfs9xt6ssvz5t7" # ORIGINAL
+PEM="./wallets/admwallet.pem"       # Wallet usuari administrador
+#PEM="./wallets/prowallet.pem"       # Wallet professor
+#PEM="./wallets/aluwallet.pem"        # Wallet alumne
+#PEM="./wallets/mainwallet.pem"      # Wallet contracte
 PROXY="https://devnet-api.multiversx.com"
 
 # Funció para convertir hex a decimal (maneja números grandes)
@@ -73,6 +74,16 @@ parse_status() {
   esac
 }
 
+parse_address()
+{
+  local address=$1
+  if [[ -z $address ]] then
+    echo ""
+  else
+    echo $(mxpy wallet bech32 --encode $address)
+  fi
+}
+
 query_transaction_info() {
   tx_hash=$1
 
@@ -94,12 +105,12 @@ transaction_validation()
     if [[ -s ./logs/transaction.json ]]; then
        output=$(cat ./logs/transaction.json)
        info=$(query_transaction_info $(echo "$output" | jq -r '.emittedTransactionHash'))
-
        if [[ -z $info ]] then
          echo ""
        else
          transstatus=$(echo "$info" | jq -r '.status')
-         if [[ $transstatus -eq "fail" ]] then
+
+         if [[ "$transstatus" == "fail" ]] then
             echo "Transacció fallida"
             transerrm=$(echo $(echo "$(echo "$info" | jq -r '.operations')" | jq -r '.[]') | jq -r '.message')
             echo "Missatge: $transerrm"
@@ -107,6 +118,7 @@ transaction_validation()
             echo $1
          fi
        fi
+
     else
       output=""
     fi
@@ -119,17 +131,19 @@ display_asset() {
   local name=$(hex_to_str $(echo "$asset_json" | jq '.name'))
   local location=$(hex_to_str $(echo "$asset_json" | jq '.location'))
   local status_hex=$(echo "$asset_json" | jq '.status')
-  local owner=$(echo "$asset_json" | jq '.owner')
-  local borrower=$(echo "$asset_json" | jq '.borrower')
+  local owner=$(echo "$asset_json" | jq -r '.owner')
+  local borrower=$(echo "$asset_json" | jq -r '.borrower')
   local loan_end=$(echo "$asset_json" | jq -r '.loan_end_timestamp')
 
   echo "Codi: $code"
   echo "Nom: $name"
   echo "Ubicació: $location"
   echo "Estat: $(parse_status "$status_hex")"
-  echo "Propietari: $owner"
+  echo "Propietari: $(parse_address $owner)"
+   
+  #echo "Propietari: " $(parse_address "0x$owner")
   if [ "$borrower" != "null" ]; then
-  echo "Prestatari: $borrower"
+    echo "Prestatari: $(parse_address $borrower)"
     if [ "$loan_end" != "null" ]; then
       echo "Fi del préstec: $(timestamp_to_date "$loan_end")"
     fi
@@ -153,7 +167,7 @@ register_asset() {
   mxpy contract call $CONTRACT \
     --pem $PEM \
     --recall-nonce \
-    --gas-limit=5000000 \
+    --gas-limit=4000000 \
     --function "registerAsset" \
     --arguments "0x$hex_code" "0x$hex_name" "0x$hex_location" \
     --proxy $PROXY \
@@ -197,7 +211,7 @@ change_asset_status() {
   mxpy contract call $CONTRACT \
     --pem $PEM \
     --recall-nonce \
-    --gas-limit=5000000 \
+    --gas-limit=4000000 \
     --function "changeAssetStatus" \
     --arguments "0x$hex_code" $status_option \
     --proxy $PROXY \
@@ -231,7 +245,7 @@ register_loan() {
   mxpy contract call $CONTRACT \
     --pem $PEM \
     --recall-nonce \
-    --gas-limit=5000000 \
+    --gas-limit=4000000 \
     --function "registerLoan" \
     --arguments "0x$hex_code" $duration \
     --proxy $PROXY \
@@ -259,12 +273,12 @@ return_asset() {
   mxpy contract call $CONTRACT \
     --pem $PEM \
     --recall-nonce \
-    --gas-limit=5000000 \
+    --gas-limit=4000000 \
     --function "returnAsset" \
     --arguments "0x$hex_code" \
     --proxy $PROXY \
     --chain D \
-    --send \ 
+    --send \
     --outfile "./logs/transaction.json" \
     --wait-result
 
@@ -289,7 +303,7 @@ add_to_whitelist() {
   mxpy contract call $CONTRACT \
     --pem $PEM \
     --recall-nonce \
-    --gas-limit=5000000 \
+    --gas-limit=3000000 \
     --function "addToWhitelist" \
     --arguments "addr:$address" \
     --proxy $PROXY \
@@ -318,7 +332,7 @@ remove_from_whitelist() {
   mxpy contract call $CONTRACT \
     --pem $PEM \
     --recall-nonce \
-    --gas-limit=5000000 \
+    --gas-limit=3000000 \
     --function "removeFromWhitelist" \
     --arguments "addr:$address" \
     --proxy $PROXY \
@@ -347,7 +361,7 @@ add_to_admin_whitelist() {
   mxpy contract call $CONTRACT \
     --pem $PEM \
     --recall-nonce \
-    --gas-limit=5000000 \
+    --gas-limit=3000000 \
     --function "addToAdminWhitelist" \
     --arguments "addr:$address" \
     --proxy $PROXY \
@@ -376,7 +390,7 @@ remove_from_admin_whitelist() {
   mxpy contract call $CONTRACT \
     --pem $PEM \
     --recall-nonce \
-    --gas-limit=5000000 \
+    --gas-limit=3000000 \
     --function "removeFromAdminWhitelist" \
     --arguments "addr:$address" \
     --proxy $PROXY \
@@ -405,7 +419,7 @@ get_admin_whitelist() {
     else
       echo "Adreces a la admin whitelist:"
       echo "$result" | jq -r '.[]' | while read -r addr; do
-        echo "- $addr"
+        echo $(parse_address $addr)
       done
     fi
   else
@@ -474,7 +488,7 @@ get_whitelist() {
     else
       echo "Adreces a la whitelist:"
       echo "$result" | jq -r '.[]' | while read -r addr; do
-        echo "- $addr"
+        echo $(parse_address $addr)
       done
     fi
   else

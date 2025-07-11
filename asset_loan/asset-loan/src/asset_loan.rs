@@ -46,14 +46,8 @@ pub trait AssetLoan {
     
     #[allow_multiple_var_args]
     #[upgrade]
-    fn upgrade(&self, new_whitelist: MultiValueEncoded<ManagedAddress>, new_admins: MultiValueEncoded<ManagedAddress>) {
-        // Clear existing whitelist
-        self.whitelisted_addresses().clear();
-        // Add new addresses to whitelist
-        let mut whitelist = self.whitelisted_addresses();
-        for address in new_whitelist {
-            whitelist.insert(address);
-        }
+    fn upgrade(&self, new_admins: MultiValueEncoded<ManagedAddress>) {
+        
         // Clear and re-initialize admin whitelist
         self.admin_whitelist().clear();
         let mut admin_whitelist = self.admin_whitelist();
@@ -68,11 +62,13 @@ pub trait AssetLoan {
 
     #[endpoint(addToWhitelist)]
     fn add_to_whitelist(&self, address: ManagedAddress) {
+        require!(self.authorized(), "Caller is not an admin");
         self.whitelisted_addresses().insert(address);
     }
 
     #[endpoint(removeFromWhitelist)]
     fn remove_from_whitelist(&self, address: ManagedAddress) {
+        require!(self.authorized(), "Caller is not an admin");
         self.whitelisted_addresses().swap_remove(&address);
     }
 
@@ -186,6 +182,7 @@ pub trait AssetLoan {
     
     #[view(getAdminWhitelist)]
     fn get_admin_whitelist(&self) -> MultiValueEncoded<ManagedAddress> {
+        
         self.admin_whitelist().iter().collect()
     }
 
@@ -201,20 +198,6 @@ pub trait AssetLoan {
         self.admin_whitelist().swap_remove(&address);
     }
 
-    // Utility: Add an address to the admin whitelist
-    fn add_admin(&self, address: ManagedAddress) {
-        self.admin_whitelist().insert(address);
-    }
-
-    // Utility: Remove an address from the admin whitelist
-    fn remove_admin(&self, address: ManagedAddress) {
-        self.admin_whitelist().swap_remove(&address);
-    }
-
-    // Utility: View all admin addresses
-    fn view_admins(&self) -> MultiValueEncoded<ManagedAddress> {
-        self.admin_whitelist().iter().collect()
-    }
 
     // Storage  
     #[view(getAsset)]

@@ -1,86 +1,90 @@
 {
     "emittedTransaction": {
-        "nonce": 26,
+        "nonce": 29,
         "value": "0",
-        "receiver": "erd1qqqqqqqqqqqqqpgqf45wwxnc7pan4uakfakgcqyp2j0axjht9mwq0p5cs0",
-        "sender": "erd19dwqnvn2lcw35kagrehe3axqatdth0j48z8hsjgzs6kwsa9esu3q5884gh",
+        "receiver": "erd1qqqqqqqqqqqqqpgqjyynsdhq4yx8jx6unhf505j2h2nqmfs9xt6ssvz5t7",
+        "sender": "erd1uwqln3hkre8x0mnzr5agq7ruvav9e237atxjnzlps7nzvyh9tnfqyqtelc",
         "senderUsername": "",
         "receiverUsername": "",
         "gasPrice": 1000000000,
-        "gasLimit": 5000000,
-        "data": "cmVnaXN0ZXJBc3NldEAzNEAzM0AzMg==",
+        "gasLimit": 4000000,
+        "data": "cmVnaXN0ZXJMb2FuQDUwNDMzMDMwMzZAMjc4ZDAw",
         "chainID": "D",
         "version": 2,
         "options": 0,
         "guardian": "",
-        "signature": "72f4122fe863360802126f62ad566339bbcf8a50a67669c821d4a9964734ab208054bca17d51d191cf75988fd9e4aa56cbda0c77079c75deb2572bea95f3890a",
+        "signature": "05d4d0a1196e5a1c67b5a9441f11aeab81975ff73a442914149e8ec380351d721f44e67260c87ce276f9943dbea27b1b33145ab5be5e0a6bf8b298992c40340e",
         "guardianSignature": "",
         "relayer": "",
         "relayerSignature": ""
     },
-    "emittedTransactionData": "registerAsset@34@33@32",
-    "emittedTransactionHash": "abea6e3bc740a233af62e6f428bd475a269894024d6945de884ddea37c6220c2",
-    "contractAddress": "erd1qqqqqqqqqqqqqpgqf45wwxnc7pan4uakfakgcqyp2j0axjht9mwq0p5cs0",
+    "emittedTransactionData": "registerLoan@5043303036@278d00",
+    "emittedTransactionHash": "2312aa4e639f0b6cf8d684ee7b3c55a374233ede18005f6301d093665fab83ba",
+    "contractAddress": "erd1qqqqqqqqqqqqqpgqjyynsdhq4yx8jx6unhf505j2h2nqmfs9xt6ssvz5t7",
     "transactionOnNetwork": {
         "type": "normal",
         "processingTypeOnSource": "SCInvoking",
         "processingTypeOnDestination": "SCInvoking",
-        "hash": "abea6e3bc740a233af62e6f428bd475a269894024d6945de884ddea37c6220c2",
-        "nonce": 26,
-        "round": 9682721,
-        "epoch": 4008,
+        "hash": "2312aa4e639f0b6cf8d684ee7b3c55a374233ede18005f6301d093665fab83ba",
+        "nonce": 29,
+        "round": 9703024,
+        "epoch": 4016,
         "value": "0",
-        "receiver": "erd1qqqqqqqqqqqqqpgqf45wwxnc7pan4uakfakgcqyp2j0axjht9mwq0p5cs0",
-        "sender": "erd19dwqnvn2lcw35kagrehe3axqatdth0j48z8hsjgzs6kwsa9esu3q5884gh",
+        "receiver": "erd1qqqqqqqqqqqqqpgqjyynsdhq4yx8jx6unhf505j2h2nqmfs9xt6ssvz5t7",
+        "sender": "erd1uwqln3hkre8x0mnzr5agq7ruvav9e237atxjnzlps7nzvyh9tnfqyqtelc",
         "gasPrice": 1000000000,
-        "gasLimit": 5000000,
-        "gasUsed": 5000000,
-        "data": "cmVnaXN0ZXJBc3NldEAzNEAzM0AzMg==",
-        "signature": "72f4122fe863360802126f62ad566339bbcf8a50a67669c821d4a9964734ab208054bca17d51d191cf75988fd9e4aa56cbda0c77079c75deb2572bea95f3890a",
+        "gasLimit": 4000000,
+        "gasUsed": 2629891,
+        "data": "cmVnaXN0ZXJMb2FuQDUwNDMzMDMwMzZAMjc4ZDAw",
+        "signature": "05d4d0a1196e5a1c67b5a9441f11aeab81975ff73a442914149e8ec380351d721f44e67260c87ce276f9943dbea27b1b33145ab5be5e0a6bf8b298992c40340e",
         "sourceShard": 2,
-        "destinationShard": 0,
-        "blockNonce": 9610166,
-        "blockHash": "5ffc3771cdcaf40e7e9a2e8299ec1fe41465733a36c77ffd38064867bc11487e",
-        "notarizedAtSourceInMetaNonce": 9615254,
-        "NotarizedAtSourceInMetaHash": "c8158c232a49972260110c92c327a24d1754c8b4a478bbe60ace5234cbddbf40",
+        "destinationShard": 1,
+        "blockNonce": 9631524,
+        "blockHash": "0215a539250719fd4039cf77777e739eab1a01cce8e30019058eacfdb82a1511",
+        "notarizedAtSourceInMetaNonce": 9635553,
+        "NotarizedAtSourceInMetaHash": "8c2bc3bd148e115ded3cad9e506c40144d1d7b4c084b82eb7165cee2f18662a7",
+        "notarizedAtDestinationInMetaNonce": 9635555,
+        "notarizedAtDestinationInMetaHash": "cb0ccd1bf856684ba143a50864de523110e4cf213fa8224964ae5ebfcb9b0e67",
         "miniblockType": "TxBlock",
-        "miniblockHash": "9ab1e4fc61f57655846fb3bc45c5965b17deca35efd9bc64c2ec57b5b2e40bfa",
-        "timestamp": 1752096326,
-        "timestampMs": 1752096326000,
-        "logs": {
-            "address": "erd1qqqqqqqqqqqqqpgqf45wwxnc7pan4uakfakgcqyp2j0axjht9mwq0p5cs0",
-            "events": [
-                {
-                    "address": "erd1qqqqqqqqqqqqqpgqf45wwxnc7pan4uakfakgcqyp2j0axjht9mwq0p5cs0",
-                    "identifier": "signalError",
-                    "topics": [
-                        "K1wJsmr+HRpbqB5vmPTA6tq7vlU4j3hJAoas6HS5hyI=",
-                        "RW5kcG9pbnQgY2FuIG9ubHkgYmUgY2FsbGVkIGJ5IG93bmVy"
-                    ],
-                    "data": "QDc1NzM2NTcyMjA2NTcyNzI2Zjcy",
-                    "additionalData": [
-                        "QDc1NzM2NTcyMjA2NTcyNzI2Zjcy"
+        "miniblockHash": "0b078903faa7cdd7d87d9e10a2f3984cdba886479a0b617578ab7b8b15daa416",
+        "hyperblockNonce": 9635555,
+        "hyperblockHash": "cb0ccd1bf856684ba143a50864de523110e4cf213fa8224964ae5ebfcb9b0e67",
+        "timestamp": 1752218144,
+        "timestampMs": 1752218144000,
+        "smartContractResults": [
+            {
+                "hash": "9b6a55e91b9d38d32dc440611f84243721a9dec446b252b44b35c53e856a187b",
+                "nonce": 30,
+                "value": 13701090000000,
+                "receiver": "erd1uwqln3hkre8x0mnzr5agq7ruvav9e237atxjnzlps7nzvyh9tnfqyqtelc",
+                "sender": "erd1qqqqqqqqqqqqqpgqjyynsdhq4yx8jx6unhf505j2h2nqmfs9xt6ssvz5t7",
+                "data": "@6f6b",
+                "prevTxHash": "2312aa4e639f0b6cf8d684ee7b3c55a374233ede18005f6301d093665fab83ba",
+                "originalTxHash": "2312aa4e639f0b6cf8d684ee7b3c55a374233ede18005f6301d093665fab83ba",
+                "gasLimit": 0,
+                "gasPrice": 1000000000,
+                "callType": 0,
+                "logs": {
+                    "address": "erd1uwqln3hkre8x0mnzr5agq7ruvav9e237atxjnzlps7nzvyh9tnfqyqtelc",
+                    "events": [
+                        {
+                            "address": "erd1uwqln3hkre8x0mnzr5agq7ruvav9e237atxjnzlps7nzvyh9tnfqyqtelc",
+                            "identifier": "completedTxEvent",
+                            "topics": [
+                                "IxKqTmOfC2z41oTuezxVo3QjPt4YAF9jAdCTZl+rg7o="
+                            ]
+                        }
                     ]
                 },
-                {
-                    "address": "erd19dwqnvn2lcw35kagrehe3axqatdth0j48z8hsjgzs6kwsa9esu3q5884gh",
-                    "identifier": "internalVMErrors",
-                    "topics": [
-                        "AAAAAAAAAAAFAE1o5xp48Hs687ZPbIwAgVSf00rrLtw=",
-                        "cmVnaXN0ZXJBc3NldA=="
-                    ],
-                    "data": "CglydW50aW1lLmdvOjg0NCBbZXJyb3Igc2lnbmFsbGVkIGJ5IHNtYXJ0Y29udHJhY3RdIFtyZWdpc3RlckFzc2V0XQoJcnVudGltZS5nbzo4NDQgW2Vycm9yIHNpZ25hbGxlZCBieSBzbWFydGNvbnRyYWN0XSBbcmVnaXN0ZXJBc3NldF0KCXJ1bnRpbWUuZ286ODQxIFtFbmRwb2ludCBjYW4gb25seSBiZSBjYWxsZWQgYnkgb3duZXJd",
-                    "additionalData": [
-                        "CglydW50aW1lLmdvOjg0NCBbZXJyb3Igc2lnbmFsbGVkIGJ5IHNtYXJ0Y29udHJhY3RdIFtyZWdpc3RlckFzc2V0XQoJcnVudGltZS5nbzo4NDQgW2Vycm9yIHNpZ25hbGxlZCBieSBzbWFydGNvbnRyYWN0XSBbcmVnaXN0ZXJBc3NldF0KCXJ1bnRpbWUuZ286ODQxIFtFbmRwb2ludCBjYW4gb25seSBiZSBjYWxsZWQgYnkgb3duZXJd"
-                    ]
-                }
-            ]
-        },
+                "operation": "transfer",
+                "isRefund": true
+            }
+        ],
         "status": "success",
         "operation": "transfer",
-        "function": "registerAsset",
-        "initiallyPaidFee": "132170000000000",
-        "fee": "132170000000000",
+        "function": "registerLoan",
+        "initiallyPaidFee": "134050000000000",
+        "fee": "120348910000000",
         "chainID": "D",
         "version": 2,
         "options": 0
